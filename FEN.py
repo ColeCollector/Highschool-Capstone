@@ -231,51 +231,85 @@ def bishop(square,board1,board2):
 
   return {square:available}
 
-def pawn(square,board1,board2):
+def pawn(square,board1,board2,enpassent):
     global xaxis, yaxis
     available = []
  
-    xnum = xaxis.index(square[1:][0])
-    ynum = yaxis.index(square[1:][1])
+    xnum = xaxis.index(square[1:][0])+1
+    ynum = yaxis.index(square[1:][1])+1
 
 
-    if f"{square[1]}{ynum+2}" not in board2:
-        if ynum+2!=8:
-            available.append(f"{square[1]}{ynum+2}")
-            if f"{square[1]}{ynum+3}" not in board2 and ynum==1:
-                available.append(f"{square[1]}{ynum+3}")
+    #making pawns go different directions based on color
+    if square[0] == "P":
+        x = 1
+        special = [2,8,5]
+        
+    else:
+        x= -1
+        special = [7,1,4]
+
+    if f"{square[1]}{ynum+1*x}" not in board2:
+        if ynum+1*x!=special[1]:
+            available.append(f"{square[1]}{ynum+1*x}")
+
+            #double pawn move
+            if f"{square[1]}{ynum+2}" not in board2 and ynum==special[0]:
+                available.append(f"{square[1]}{ynum+2*x}")
         else:
-            available.append(f"{square[1]}{ynum+2}=Q")
-            available.append(f"{square[1]}{ynum+2}=R")
-            available.append(f"{square[1]}{ynum+2}=B")
-            available.append(f"{square[1]}{ynum+2}=N")
+            available.append(f"{square[1]}{ynum+1*x}=Q")
+            available.append(f"{square[1]}{ynum+1*x}=R")
+            available.append(f"{square[1]}{ynum+1*x}=B")
+            available.append(f"{square[1]}{ynum+1*x}=N")
 
-
-    if f"{xaxis[xnum+1]}{ynum+2}" in board2:
-        if (board1[board2.index(f"{xaxis[xnum+1]}{ynum+2}")])[:1].isupper() != square[:1].isupper():
+    if xnum<8:
+        if f"{xaxis[xnum]}{ynum+1*x}" in board2:
+            
             #pawn takes right
-            if ynum+2!=8:
-                available.append(f"{square[1]}x{xaxis[xnum+1]}{ynum+2}")
-            else:
-                available.append(f"{square[1]}x{xaxis[xnum+1]}{ynum+2}=Q")
-                available.append(f"{square[1]}x{xaxis[xnum+1]}{ynum+2}=R")
-                available.append(f"{square[1]}x{xaxis[xnum+1]}{ynum+2}=B")
-                available.append(f"{square[1]}x{xaxis[xnum+1]}{ynum+2}=N")
+            if (board1[board2.index(f"{xaxis[xnum]}{ynum+1*x}")])[:1].isupper() != square[:1].isupper():
+                if ynum+1*x!= special[1]:
+                    available.append(f"{square[1]}x{xaxis[xnum]}{ynum+1*x}")
+
+                else:
+                    available.append(f"{square[1]}x{xaxis[xnum]}{ynum+1*x}=Q")
+                    available.append(f"{square[1]}x{xaxis[xnum]}{ynum+1*x}=R")
+                    available.append(f"{square[1]}x{xaxis[xnum]}{ynum+1*x}=B")
+                    available.append(f"{square[1]}x{xaxis[xnum]}{ynum+1*x}=N")
+
+    if xnum-2>=0:
+        if f"{xaxis[xnum-2]}{ynum+1*x}" in board2:
+
+            #pawn takes left
+            if (board1[board2.index(f"{xaxis[xnum-2]}{ynum+1*x}")])[:1].isupper() != square[:1].isupper():
+                if ynum+1*x!=special[1]:
+                    available.append(f"{square[1]}x{xaxis[xnum-2]}{ynum+1*x}")
+                else:
+                    available.append(f"{square[1]}x{xaxis[xnum-2]}{ynum+1*x}=Q")
+                    available.append(f"{square[1]}x{xaxis[xnum-2]}{ynum+1*x}=R")
+                    available.append(f"{square[1]}x{xaxis[xnum-2]}{ynum+1*x}=B")
+                    available.append(f"{square[1]}x{xaxis[xnum-2]}{ynum+1*x}=N")
     
-    if f"{xaxis[xnum-1]}{ynum+2}" in board2 and xnum>0:
-        #pawn takes left
-        if (board1[board2.index(f"{xaxis[xnum-1]}{ynum+2}")])[:1].isupper() != square[:1].isupper():
-            if ynum+2!=8:
-                available.append(f"{square[1]}x{xaxis[xnum-1]}{ynum+2}")
-            else:
-                available.append(f"{square[1]}x{xaxis[xnum-1]}{ynum+2}=Q")
-                available.append(f"{square[1]}x{xaxis[xnum-1]}{ynum+2}=R")
-                available.append(f"{square[1]}x{xaxis[xnum-1]}{ynum+2}=B")
-                available.append(f"{square[1]}x{xaxis[xnum-1]}{ynum+2}=N")
+    if xnum<8:
+        if f"{xaxis[xnum]}{ynum+1*x}" == enpassent and ynum == special[2]:
+            available.append(f"{xaxis[xnum-1]}x{enpassent}")
+
 
     
     available.sort()
     return {square:available}
+
+def king(square,board1,board2,castle):
+    available = []
+
+
+
+    available.sort()
+    return {square:available}
+
+
+
+
+
+
 
 
 #board = fen2pos("r1B1k2r/ppPp1p1n/n3p1p1/6Q1/qPq5/N1B5/1P2PPPP/R3K2R w KQkq - 0 1")
@@ -285,7 +319,7 @@ def pawn(square,board1,board2):
 #board = fen2pos ("8/B6B/B6B/B6B/B6B/B6B/B6B/B7 w - - 0 1")
 #board = fen2pos("2q5/4q3/8/1p2R1q1/q1R5/8/2q1p3/k6K w - - 0 1")
 #board = fen2pos ("rnbqkbnr/pppp1ppp/8/8/4pP2/6PP/PPPPP3/RNBQKBNR b KQkq f3 0 3")
-board = fen2pos("n1n4k/1P1PP3/8/1P1P4/1pPp4/2P1n3/P4PP1/K7 w - - 0 1")
+board = fen2pos("rnbqkbnr/pppp1ppp/8/8/4pP2/6PP/PPPPP3/RNBQKBNR b KQkq f3 0 3")
 
 
 
@@ -315,8 +349,8 @@ for i in board[0]:
         queen.sort()
         print({i:queen})
 
-    elif i[:1] == "P":
-        print(pawn(board[0][tally],board[0],board2)) 
+    elif i[:1] == "P" or i[:1] == "p":
+        print(pawn(board[0][tally],board[0],board2,"f3")) 
 
     elif i[:1] == "K":
         pass
