@@ -257,9 +257,7 @@ def pawn(square,board1,board2,enpassent):
                 available.append(f"{square[1]}{ynum+2*x}")
         else:
             available.append(f"{square[1]}{ynum+1*x}=Q")
-            available.append(f"{square[1]}{ynum+1*x}=R")
-            available.append(f"{square[1]}{ynum+1*x}=B")
-            available.append(f"{square[1]}{ynum+1*x}=N")
+
 
     if xnum<8:
         if f"{xaxis[xnum]}{ynum+1*x}" in board2:
@@ -271,9 +269,7 @@ def pawn(square,board1,board2,enpassent):
 
                 else:
                     available.append(f"{square[1]}x{xaxis[xnum]}{ynum+1*x}=Q")
-                    available.append(f"{square[1]}x{xaxis[xnum]}{ynum+1*x}=R")
-                    available.append(f"{square[1]}x{xaxis[xnum]}{ynum+1*x}=B")
-                    available.append(f"{square[1]}x{xaxis[xnum]}{ynum+1*x}=N")
+
 
     if xnum-2>=0:
         if f"{xaxis[xnum-2]}{ynum+1*x}" in board2:
@@ -284,9 +280,7 @@ def pawn(square,board1,board2,enpassent):
                     available.append(f"{square[1]}x{xaxis[xnum-2]}{ynum+1*x}")
                 else:
                     available.append(f"{square[1]}x{xaxis[xnum-2]}{ynum+1*x}=Q")
-                    available.append(f"{square[1]}x{xaxis[xnum-2]}{ynum+1*x}=R")
-                    available.append(f"{square[1]}x{xaxis[xnum-2]}{ynum+1*x}=B")
-                    available.append(f"{square[1]}x{xaxis[xnum-2]}{ynum+1*x}=N")
+
     
     if xnum<8:
         if f"{xaxis[xnum]}{ynum+1*x}" == enpassent and ynum == special[2]:
@@ -298,7 +292,55 @@ def pawn(square,board1,board2,enpassent):
     return {square:available}
 
 def king(square,board1,board2,castle):
+    global xaxis, yaxis
     available = []
+
+    xnum = xaxis.index(square[1:][0])
+    ynum = yaxis.index(square[1:][1])
+
+    def check(pos):
+        if pos in board2:
+            if (board1[board2.index(pos)])[:1].isupper() != square[:1].isupper():
+                available.append(f"Kx{pos}")
+        else:
+            available.append(f"K{pos}")
+
+    if ynum+1 < 8:
+        #up
+        
+        pos = f"{xaxis[xnum]}{yaxis[ynum+1]}"
+        check(pos)
+        if xnum+1 < 8:
+            pos = f"{xaxis[xnum+1]}{yaxis[ynum+1]}"
+            check(pos)
+
+        if xnum-1 > 0:  
+            pos = f"{xaxis[xnum-1]}{yaxis[ynum+1]}"  
+            check(pos)
+            
+    if ynum-1 > 0:
+        #down
+        pos = f"{xaxis[xnum]}{yaxis[ynum-1]}"
+        check(pos)
+
+        if xnum+1 < 8:
+            pos = f"{xaxis[xnum+1]}{yaxis[ynum-1]}"
+            check(pos)
+
+        if xnum-1 > 0:  
+            pos = f"{xaxis[xnum-1]}{yaxis[ynum-1]}"  
+            check(pos)
+
+    if xnum+1 < 8:
+        #right
+        pos = f"{xaxis[xnum+1]}{yaxis[ynum]}"
+        check(pos)
+
+    if xnum-1 > 0:  
+        #left
+        pos = f"{xaxis[xnum-1]}{yaxis[ynum]}"
+        check(pos)
+
 
 
 
@@ -312,51 +354,153 @@ def king(square,board1,board2,castle):
 
 
 
-#board = fen2pos("r1B1k2r/ppPp1p1n/n3p1p1/6Q1/qPq5/N1B5/1P2PPPP/R3K2R w KQkq - 0 1")
+board = fen2pos("r1B1k2r/ppPp1p1n/n3p1p1/6Q1/qPq5/N1B5/1P2PPPP/R3K2R w KQkq - 0 1")
 #board = fen2pos("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
 #board = fen2pos("k7/8/8/8/3B4/8/8/7K w - - 0 1")
 #board = fen2pos("r3k2r/pQpp1p1n/n1P1p1pN/8/qP3B2/N1B1b3/1PK1PPPP/R6R w HAkq - 0 1")
 #board = fen2pos ("8/B6B/B6B/B6B/B6B/B6B/B6B/B7 w - - 0 1")
 #board = fen2pos("2q5/4q3/8/1p2R1q1/q1R5/8/2q1p3/k6K w - - 0 1")
 #board = fen2pos ("rnbqkbnr/pppp1ppp/8/8/4pP2/6PP/PPPPP3/RNBQKBNR b KQkq f3 0 3")
-board = fen2pos("rnbqkbnr/pppp1ppp/8/8/4pP2/6PP/PPPPP3/RNBQKBNR b KQkq f3 0 3")
+#board = fen2pos("7k/5Q2/4q3/4K3/8/8/8/8 w - - 0 1")
+
 
 
 
 moves = []
+board2w = []
+board2b = []
+board1b = []
+board1w = []
 board2 = []
+kmoves = []
 
 #an homage to andrew
 tally = 0
 
 
 for i in board[0]:
+    #interestingly we have to act like kings don't exist 
+    #because otherwise the king will want to stay in danger
     board2.append(i[1:])
+
+    if i[:1] != "K":
+        board2b.append(i[1:])
+        board1b.append(i)
+
+    if i[:1] != "k":
+        board2w.append(i[1:])
+        board1w.append(i)    
 
 
 for i in board[0]:
-    if i[:1] == "B" or i[:1] == "b":
-        print(bishop(board[0][tally],board[0],board2))
-
-    elif i[:1] == "R" or i[:1] == "r":
-        print(rook(board[0][tally],board[0],board2))
+    if i[:1] == "B":
+        moves.append(bishop(board[0][tally],board1w,board2w))
     
-    elif i[:1] == "N" or i[:1] == "n":
-        print(knight(board[0][tally],board[0],board2))
+    elif i[:1] == "b":
+        moves.append(bishop(board[0][tally],board1b,board2b))
 
-    elif i[:1] == "Q" or i[:1] == "q":
-        queen = bishop(board[0][tally],board[0],board2)[i]+rook(board[0][tally],board[0],board2)[i]
+    elif i[:1] == "R":
+        moves.append(rook(board[0][tally],board1w,board2w))
+    
+    elif i[:1] == "r":
+        moves.append(rook(board[0][tally],board1b,board2b))
+
+
+    elif i[:1] == "N":
+        moves.append(knight(board[0][tally],board1w,board2w))
+    
+    elif i[:1] == "n":
+        moves.append(knight(board[0][tally],board1b,board2b))
+
+    elif i[:1] == "Q":
+        queen = bishop(board[0][tally],board1w,board2w)[i]+rook(board[0][tally],board1w,board2w)[i]
         queen.sort()
-        print({i:queen})
+        moves.append({i:queen})
+    
+    elif i[:1] == "q":
+        queen = bishop(board[0][tally],board[0],board2b)[i]+rook(board[0][tally],board1b,board2b)[i]
+        queen.sort()
+        moves.append({i:queen})
 
     elif i[:1] == "P" or i[:1] == "p":
-        print(pawn(board[0][tally],board[0],board2,"f3")) 
+        moves.append(pawn(board[0][tally],board[0],board2,None)) 
 
-    elif i[:1] == "K":
-        pass
+    elif i[:1] == "K" or i[:1] == "k":
+        kmoves.append(king(board[0][tally],board[0],board2,board[2]))
 
-    tally=tally+1
+    tally+=1
+    
+allmoves = []
+wdupes = []
+bdupes = []
+
+for j in moves:
+    if list(j.keys())[0][0].isupper():
+        for k in (list(j.values())[0]):
+            if k in allmoves:
+                wdupes.append(k)
+            else:
+                allmoves.append(k)
+
+allmoves = []
+
+for j in moves:
+    if list(j.keys())[0][0].isupper() == False:
+        for k in (list(j.values())[0]):
+            if k in allmoves:
+                bdupes.append(k)
+            else:
+                allmoves.append(k)
 
 
 
-print(f"Program ran for {time.time()-start} seconds\n")
+for j in moves:
+    if list(j.keys())[0][0].isupper() == False:
+        for k in (list(j.values())[0]):
+            if k in bdupes:
+                list(j.values())[0].append(f"{k[:1]}{list(j.keys())[0][1]}{k[1:]}")
+                list(j.values())[0].remove(k)
+
+    else:
+        for k in (list(j.values())[0]):
+            if k in wdupes:
+                list(j.values())[0].append(f"{k[:1]}{list(j.keys())[0][1]}{k[1:]}")
+                list(j.values())[0].remove(k)
+
+temp = []
+temp2 = []
+for i in kmoves:
+    temp = []
+    temp2 = []
+    for l in list(i.values())[0]:
+        if l[1] != "x":
+            temp.append(l[1:])
+        else:
+            temp.append(l[2:])
+
+    for j in moves:
+        for m in list(j.values())[0]:
+            if list(i.keys())[0][:1].isupper() != list(j.keys())[0][:1].isupper():
+                if m[1:] == list(i.keys())[0][1:]:
+                    print(f"{list(j.keys())[0]} is attcking the king")
+                temp2.append(m)
+    
+    for n in temp2:
+        if n[1:] in temp:
+            if (f"K{n[1:]}") in list(i.values())[0]:
+                list(i.values())[0].remove(f"K{n[1:]}")
+            
+
+
+
+
+for i in kmoves:
+    moves.append(i)
+
+for i in moves:
+    print(i)
+
+
+
+
+print(f"Program ran for {round((time.time()-start),4)} seconds\n")
