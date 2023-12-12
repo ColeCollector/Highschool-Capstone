@@ -9,7 +9,6 @@ xaxis = ['a','b','c','d','e','f','g','h']
 yaxis = ['1','2','3','4','5','6','7','8']
 
 
-
 def fen2pos(fen):
     print(fen)
     positions = []
@@ -39,13 +38,13 @@ def fen2pos(fen):
         
     return positions,castle,fen.split(" ")[3]
 
-
 def pos2fen(pos):
     letters = ['a','b','c','d','e','f','g','h','i']
     x = ""
     row = 8
     collumn = -1
     pos.append({" i1":"1"})
+
     for i in pos:
         if int(list(i.keys())[0][2]) != row:
             row-=1
@@ -80,7 +79,6 @@ def pos2fen(pos):
   
     x += "w KQkq - 0 1"
     return x
-
 
 def rook(square,board1,board2):
   global xaxis
@@ -391,106 +389,137 @@ def king(square,board1,board2,castle):
     available.sort()
     return {square:available}
 
+def main(board):
+
+    moves = []
+    board2 = []
 
 
+    #an homage to andrew
+    tally = 0
+
+
+    for i in board[0]:
+        board2.append(i[1:])
+
+
+    for i in board[0]:
+        if i[:1] == "B" or i[:1] == "b":
+            moves.append(bishop(board[0][tally],board[0],board2))
+
+        elif i[:1] == "R" or i[:1] == "r":
+            moves.append(rook(board[0][tally],board[0],board2))
+
+        elif i[:1] == "N" or i[:1] == "n":
+            moves.append(knight(board[0][tally],board[0],board2))
+        
+        elif i[:1] == "Q" or i[:1] == "q":
+            queen = bishop(board[0][tally],board[0],board2)[i]+rook(board[0][tally],board[0],board2)[i]
+            queen.sort()
+            moves.append({i:queen})
+
+        elif i[:1] == "P" or i[:1] == "p":
+            moves.append(pawn(board[0][tally],board[0],board2,None)) 
+
+        elif i[:1] == "K" or i[:1] == "k":
+            moves.append(king(board[0][tally],board[0],board2,board[2]))
+
+        tally+=1
+        
+    allmoves = []
+    wdupes = []
+    bdupes = []
+
+    for j in moves:
+        if list(j.keys())[0][0].isupper():
+            for k in (list(j.values())[0]):
+                if k in allmoves:
+                    wdupes.append(k)
+                else:
+                    allmoves.append(k)
+
+    allmoves = []
+
+    for j in moves:
+        if list(j.keys())[0][0].isupper() == False:
+            for k in (list(j.values())[0]):
+                if k in allmoves:
+                    bdupes.append(k)
+                else:
+                    allmoves.append(k)
+
+
+    for j in moves:
+        if list(j.keys())[0][0].isupper() == False:
+            for k in (list(j.values())[0]):
+                if k in bdupes:
+                    list(j.values())[0][list(j.values())[0].index(k)] = f"{k[:1]}{list(j.keys())[0][1]}{k[1:]}"
+
+        else:
+            for k in (list(j.values())[0]):
+                if k in wdupes:
+                    list(j.values())[0][list(j.values())[0].index(k)] = f"{k[:1]}{list(j.keys())[0][1]}{k[1:]}"
+
+    allmoves = []
+
+    for i in moves:
+        for j in list(i.values())[0]:
+            allmoves.append(j)
+        
+
+
+    print("Your avaiable moves:",allmoves)
+    move = input(">")
+
+    while move not in allmoves:
+        move = input(">")
+        
+    for i in moves:
+        if move in list(i.values())[0]:
+            move = list(i.keys())[0][0]+move[1:]
+            moves.remove(i)
+
+    sortedmoves = []
+    continu = True
+
+    #sorting the moves
+    for j in moves:
+        if continu == True:
+            if list(j.keys())[0][-1] == move[-1]:
+                if xaxis.index(list(j.keys())[0][-2])+1 > xaxis.index(move[-2])+1:
+                    sortedmoves.append({move:""})
+                    sortedmoves.append(j)
+                    continu = False
+                else:
+                    sortedmoves.append(j)
+
+
+            elif list(j.keys())[0][-1] < move[-1]:
+                sortedmoves.append({move:""})
+                sortedmoves.append(j)
+                continu = False
+
+            else:
+                sortedmoves.append(j)
+        else:
+            sortedmoves.append(j)
+
+            
+            
+
+
+
+
+    print(pos2fen(sortedmoves))
+
+    print(f"Program ran for {round((time.time()-start),4)} seconds\n")
 
 #board = fen2pos("r1B1k2r/ppPp1p1n/n3p1p1/6Q1/qPq5/N1B5/1P2PPPP/R3K2R w KQkq - 0 1")
 #board = fen2pos("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
 #board = fen2pos("k7/8/8/8/3B4/8/8/7K w - - 0 1")
-#board = fen2pos("r3k2r/pQpp1p1n/n1P1p1pN/8/qP3B2/N1B1b3/1PK1PPPP/R6R w HAkq - 0 1")
-board = fen2pos ("8/B6B/B6B/B6B/B6B/B6B/B6B/B7 w - - 0 1")
+board = fen2pos("r3k2r/pQpp1p1n/n1P1p1pN/8/qP3B2/N1B1b3/1PK1PPPP/R6R w HAkq - 0 1")
 #board = fen2pos("2q5/4q3/8/1p2R1q1/q1R5/8/2q1p3/k6K w - - 0 1")
 #board = fen2pos ("rnbqkbnr/pppp1ppp/8/8/4pP2/6PP/PPPPP3/RNBQKBNR b KQkq f3 0 3")
 #board = fen2pos("7k/5Q2/4q3/4K3/8/8/8/8 w - - 0 1")
 
-
-
-
-moves = []
-board2 = []
-
-
-#an homage to andrew
-tally = 0
-
-
-for i in board[0]:
-    #interestingly we have to act like kings don't exist 
-    #because otherwise the king will want to stay in danger
-    board2.append(i[1:])
-
-
-for i in board[0]:
-    if i[:1] == "B" or i[:1] == "b":
-        moves.append(bishop(board[0][tally],board[0],board2))
-
-    elif i[:1] == "R" or i[:1] == "r":
-        moves.append(rook(board[0][tally],board[0],board2))
-
-    elif i[:1] == "N" or i[:1] == "n":
-        moves.append(knight(board[0][tally],board[0],board2))
-    
-    elif i[:1] == "Q" or i[:1] == "q":
-        queen = bishop(board[0][tally],board[0],board2)[i]+rook(board[0][tally],board[0],board2)[i]
-        queen.sort()
-        moves.append({i:queen})
-
-    elif i[:1] == "P" or i[:1] == "p":
-        moves.append(pawn(board[0][tally],board[0],board2,None)) 
-
-    elif i[:1] == "K" or i[:1] == "k":
-        moves.append(king(board[0][tally],board[0],board2,board[2]))
-
-    tally+=1
-    
-allmoves = []
-wdupes = []
-bdupes = []
-
-for j in moves:
-    if list(j.keys())[0][0].isupper():
-        for k in (list(j.values())[0]):
-            if k in allmoves:
-                wdupes.append(k)
-            else:
-                allmoves.append(k)
-
-allmoves = []
-
-
-for j in moves:
-    if list(j.keys())[0][0].isupper() == False:
-        for k in (list(j.values())[0]):
-            if k in allmoves:
-                bdupes.append(k)
-            else:
-                allmoves.append(k)
-
-
-for j in moves:
-    if list(j.keys())[0][0].isupper() == False:
-        for k in (list(j.values())[0]):
-            if k in bdupes:
-                list(j.values())[0][list(j.values())[0].index(k)] = f"{k[:1]}{list(j.keys())[0][1]}{k[1:]}"
-
-
-    else:
-        for k in (list(j.values())[0]):
-            if k in wdupes:
-                list(j.values())[0][list(j.values())[0].index(k)] = f"{k[:1]}{list(j.keys())[0][1]}{k[1:]}"
-
-allmoves = []
-
-for i in moves:
-    allmoves.append(list(i.keys())[0])
-print(allmoves)
-
-move = input(">")
-
-while move not in allmoves:
-    move = input(">")
-
-
-print(pos2fen(moves))
-
-print(f"Program ran for {round((time.time()-start),4)} seconds\n")
+main(board)
