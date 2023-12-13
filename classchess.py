@@ -40,7 +40,7 @@ class chess():
             
         return positions,castle,fen.split(" ")[3]
 
-    def pos2fen(self,pos):
+    def pos2fen(self,pos,turn):
         letters = ['a','b','c','d','e','f','g','h','i']
         x = ""
         row = 8
@@ -48,6 +48,7 @@ class chess():
         pos.append({" i1":"1"})
 
         for i in pos:
+            bb = False
             if int(list(i.keys())[0][2]) != row:
                 row-=1
 
@@ -55,17 +56,24 @@ class chess():
                     if 0!=letters.index(list(i.keys())[0][1]):
                         x = f"{x}{-collumn+7}"
                     else:
-                        x = f"{x}{-collumn+7}/{list(i.keys())[0][0]}"
+                        bb= True
+                        x = f"{x}{-collumn+7}"
 
                 while int(list(i.keys())[0][2]) != row:
                     x = f"{x}/8"
                     row-=1
 
+                if bb == True:
+                    x = f"{x}/{list(i.keys())[0][0]}"
+
                 if collumn !=7 and 0!=letters.index(list(i.keys())[0][1]):
                     x = f"{x}/{letters.index(list(i.keys())[0][1])}{list(i.keys())[0][0]}"
-                    
+
                 if collumn==7:
-                    x = f"{x}/{list(i.keys())[0][0]}"
+                    if 0!=letters.index(list(i.keys())[0][1]):
+                        x = f"{x}/{letters.index(list(i.keys())[0][1])}{list(i.keys())[0][0]}"
+                    else:
+                        x = f"{x}/{list(i.keys())[0][0]}"
                 
 
             else:
@@ -74,12 +82,13 @@ class chess():
                 else:
                     x = f"{x}{list(i.keys())[0][0]}"
             
-
+    
 
             collumn = letters.index(list(i.keys())[0][1])
         
-    
-        x += "w KQkq - 0 1"
+
+        
+        x += f"{turn[0]} KQkq - 0 1"
         return x
 
     def rook(self,square,board1,board2):
@@ -93,7 +102,7 @@ class chess():
         horizontal = [True,True]
 
 
-        for i in range(1,8):
+        for i in range(100):
 
             if vertical[0] == True and int(last[1])+i<=8:
                 #up
@@ -392,121 +401,179 @@ class chess():
         return {square:available}
 
     def __init__(self,board):
+        movecount = [0,0]
+        pgn = []
+        turn = "white"
 
-        moves = []
-        board2 = []
-
-
-        #an homage to andrew
-        tally = 0
-
-
-        for i in board[0]:
-            board2.append(i[1:])
+        while True:
+            moves = []
+            board2 = []
 
 
-        for i in board[0]:
-            if i[:1] == "B" or i[:1] == "b":
-                moves.append(self.bishop(board[0][tally],board[0],board2))
+            #an homage to andrew
+            tally = 0
 
-            elif i[:1] == "R" or i[:1] == "r":
-                moves.append(self.rook(board[0][tally],board[0],board2))
 
-            elif i[:1] == "N" or i[:1] == "n":
-                moves.append(self.knight(board[0][tally],board[0],board2))
+            for i in board[0]:
+                board2.append(i[1:])
+
+
+            for i in board[0]:
+                if i[:1] == "B" or i[:1] == "b":
+                    moves.append(self.bishop(board[0][tally],board[0],board2))
+
+                elif i[:1] == "R" or i[:1] == "r":
+                    moves.append(self.rook(board[0][tally],board[0],board2))
+
+                elif i[:1] == "N" or i[:1] == "n":
+                    moves.append(self.knight(board[0][tally],board[0],board2))
+                
+                elif i[:1] == "Q" or i[:1] == "q":
+                    queen = self.bishop(board[0][tally],board[0],board2)[i]+self.rook(board[0][tally],board[0],board2)[i]
+                    queen.sort()
+                    moves.append({i:queen})
+
+                elif i[:1] == "P" or i[:1] == "p":
+                    moves.append(self.pawn(board[0][tally],board[0],board2,None)) 
+
+                elif i[:1] == "K" or i[:1] == "k":
+                    moves.append(self.king(board[0][tally],board[0],board2,board[2]))
+
+                tally+=1
+                
+            allmoves = []
+            wdupes = []
+            bdupes = []
+
+            for j in moves:
+                if list(j.keys())[0][0].isupper():
+                    for k in (list(j.values())[0]):
+                        if k in allmoves:
+                            wdupes.append(k)
+                        else:
+                            allmoves.append(k)
+
+            allmoves = []
+
+            for j in moves:
+                if list(j.keys())[0][0].isupper() == False:
+                    for k in (list(j.values())[0]):
+                        if k in allmoves:
+                            bdupes.append(k)
+                        else:
+                            allmoves.append(k)
+
+
+            for j in moves:
+                if list(j.keys())[0][0].isupper() == False:
+                    for k in (list(j.values())[0]):
+                        if k in bdupes:
+                            list(j.values())[0][list(j.values())[0].index(k)] = f"{k[:1]}{list(j.keys())[0][1]}{k[1:]}"
+
+                else:
+                    for k in (list(j.values())[0]):
+                        if k in wdupes:
+                            list(j.values())[0][list(j.values())[0].index(k)] = f"{k[:1]}{list(j.keys())[0][1]}{k[1:]}"
+
+            allmoves = []
+
+            for i in moves:
+                if turn == "white" and list(i.keys())[0][0].isupper() == True:
+                    for j in list(i.values())[0]:
+                        allmoves.append(j)
+
+                elif turn == "black" and list(i.keys())[0][0].isupper() == False:
+                    for j in list(i.values())[0]:
+                        allmoves.append(j)
             
-            elif i[:1] == "Q" or i[:1] == "q":
-                queen = self.bishop(board[0][tally],board[0],board2)[i]+self.rook(board[0][tally],board[0],board2)[i]
-                queen.sort()
-                moves.append({i:queen})
 
-            elif i[:1] == "P" or i[:1] == "p":
-                moves.append(self.pawn(board[0][tally],board[0],board2,None)) 
-
-            elif i[:1] == "K" or i[:1] == "k":
-                moves.append(self.king(board[0][tally],board[0],board2,board[2]))
-
-            tally+=1
+            move = self.random.choice(allmoves)
+            pgn.append(move)
             
-        allmoves = []
-        wdupes = []
-        bdupes = []
+            #if capture then 50 move rule resets
+            if "x" in move:
+                movecount[1] = 0
 
-        for j in moves:
-            if list(j.keys())[0][0].isupper():
-                for k in (list(j.values())[0]):
-                    if k in allmoves:
-                        wdupes.append(k)
-                    else:
-                        allmoves.append(k)
+            for i in moves:
+                if move in list(i.values())[0]:
+                    if (list(i.keys())[0][0].isupper() == True and turn == "white") or(list(i.keys())[0][0].isupper() == False and turn == "black"):
+                        if "=" in move:
+                            if list(i.keys())[0][0].isupper():
+                                move = "Q" + move[-4] + move[-3]
+                            else:
+                                move = "q" + move[-4] + move[-3]   
+                        else:
+                            move = list(i.keys())[0][0]+move[-2]+move[-1]
+                        moves.remove(i)
 
-        allmoves = []
-
-        for j in moves:
-            if list(j.keys())[0][0].isupper() == False:
-                for k in (list(j.values())[0]):
-                    if k in allmoves:
-                        bdupes.append(k)
-                    else:
-                        allmoves.append(k)
+            #if pawn moves 50 move rule resets
+            if "p" in move or "P" in move:
+                movecount[1] = 0
 
 
-        for j in moves:
-            if list(j.keys())[0][0].isupper() == False:
-                for k in (list(j.values())[0]):
-                    if k in bdupes:
-                        list(j.values())[0][list(j.values())[0].index(k)] = f"{k[:1]}{list(j.keys())[0][1]}{k[1:]}"
+            #sorting the moves
+            sortedmoves = []
+            continu = True
 
-            else:
-                for k in (list(j.values())[0]):
-                    if k in wdupes:
-                        list(j.values())[0][list(j.values())[0].index(k)] = f"{k[:1]}{list(j.keys())[0][1]}{k[1:]}"
+        
+            for j in moves:
+                if list(j.keys())[0][-2]+list(j.keys())[0][-1] == move[-2]+move[-1]:
 
-        allmoves = []
+                    sortedmoves.append({move:""})
+                    continu = False
 
-        for i in moves:
-            for j in list(i.values())[0]:
-                allmoves.append(j)
+                elif continu == True:
+                    if list(j.keys())[0][-1] == move[-1]:
+                        if self.xaxis.index(list(j.keys())[0][-2])+1 > self.xaxis.index(move[-2])+1:
+                            sortedmoves.append({move:""})
+                            sortedmoves.append(j)
+                            continu = False
+                        else:
+                            sortedmoves.append(j)
 
-    
-        move = self.random.choice(allmoves)
-        print(move)
-            
-        for i in moves:
-            if move in list(i.values())[0]:
-                move = list(i.keys())[0][0]+move[1:]
-                moves.remove(i)
 
-        sortedmoves = []
-        continu = True
-
-        #sorting the moves
-        for j in moves:
-            if continu == True:
-                if list(j.keys())[0][-1] == move[-1]:
-                    if self.xaxis.index(list(j.keys())[0][-2])+1 > self.xaxis.index(move[-2])+1:
+                    elif list(j.keys())[0][-1] < move[-1]:
                         sortedmoves.append({move:""})
                         sortedmoves.append(j)
                         continu = False
+
                     else:
                         sortedmoves.append(j)
-
-
-                elif list(j.keys())[0][-1] < move[-1]:
-                    sortedmoves.append({move:""})
-                    sortedmoves.append(j)
-                    continu = False
-
                 else:
                     sortedmoves.append(j)
+
+
+            movecount[1] +=1
+            movecount[0] +=1
+            print(movecount)
+
+            if turn == "black":
+                turn = "white"
             else:
-                sortedmoves.append(j)
+                turn = "black"
 
+            fen = self.pos2fen(sortedmoves,turn)
 
+            if "k" not in fen.split(" ")[0]:
+                print("White won!")
+                break
 
-        print(self.pos2fen(sortedmoves))
+            if "K" not in fen.split(" ")[0]:
+                print("Black won!")
+                break 
 
-        print(f"Program ran for {round((self.time.time()-self.start),4)} seconds\n")
+            if movecount[1] == 50:
+                print("Draw by 50 move rule")
+                break
+
+            board = self.fen2pos(fen)
+
+            print(f"Program ran for {round((self.time.time()-self.start),4)} seconds\n")
+        for i in range(len(pgn)):
+            if i%2==0:
+                print(f"{int((i+2)/2)}. {pgn[i]}",end=" ")
+            else:
+                print(pgn[i],end=" ")
 
 #board = self.fen2pos("r1B1k2r/ppPp1p1n/n3p1p1/6Q1/qPq5/N1B5/1P2PPPP/R3K2R w KQkq - 0 1")
 #board = self.fen2pos("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
@@ -516,6 +583,6 @@ class chess():
 #board = self.fen2pos ("rnbqkbnr/pppp1ppp/8/8/4pP2/6PP/PPPPP3/RNBQKBNR b KQkq f3 0 3")
 #board = self.fen2pos("7k/5Q2/4q3/4K3/8/8/8/8 w - - 0 1")
 
-board = chess.fen2pos(None,"r3k2r/pQpp1p1n/n1P1p1pN/8/qP3B2/N1B1b3/1PK1PPPP/R6R w HAkq - 0 1")
+board = chess.fen2pos(None,"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
 
 chess(board)
