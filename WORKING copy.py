@@ -1,11 +1,12 @@
 import time
 class chess():
-    #remember lowercase = black
-    #         upercase = white
+    #remember:
+    #lowercase = black
+    #upercase = white
 
     import random
 
-    xaxis = ['a','b','c','d','e','f','g','h']
+    xaxis = ['a','b','c','d','e','f','g','h','i']
     yaxis = ['1','2','3','4','5','6','7','8']
 
 
@@ -42,7 +43,7 @@ class chess():
         x = ""
         row = 8
         collumn = -1
-        pos.append({" i1":"1"})
+        pos.append({" i1":[]})
 
         for i in pos:
             switch = False
@@ -80,7 +81,6 @@ class chess():
                     x = f"{x}{list(i.keys())[0][0]}"
             
     
-
             collumn = letters.index(list(i.keys())[0][1])
         
 
@@ -224,8 +224,6 @@ class chess():
         first = square[:1]
 
         for i in range(0,8):
-
-
             if ynum+2+i<=8 and xnum-i-1>=0 and top[0] == True:
                 #top left
                 pos = f"{self.xaxis[xnum-i-1]}{ynum+2+i}"
@@ -336,8 +334,7 @@ class chess():
         available.sort()
         return {square:available}
 
-    def king(self,square,board1,board2,castle):
-        print(castle)
+    def king(self,square,board1,board2):
         available = []
 
         xnum = self.xaxis.index(square[1:][0])
@@ -385,7 +382,7 @@ class chess():
             #left
             pos = f"{self.xaxis[xnum-1]}{self.yaxis[ynum]}"
             check(pos)
-        
+
         if (f"{self.xaxis[xnum+1]}{self.yaxis[ynum]}" not in board2) and (f"{self.xaxis[xnum+2]}{self.yaxis[ynum]}" not in board2):
             available.append("O-O")
 
@@ -409,8 +406,6 @@ class chess():
 
             for i in board[0]:
                 board2.append(i[1:])
-
-
 
             if turn == "white":
                 piece = ["B","R","N","Q","P","K"]
@@ -438,7 +433,7 @@ class chess():
                     moves.append(self.pawn(board[0][tally],board[0],board2,None)) 
 
                 elif i[:1] == piece[5]:
-                    moves.append(self.king(board[0][tally],board[0],board2,board[1]))
+                    moves.append(self.king(board[0][tally],board[0],board2))
 
                 else:
                     moves.append({board[0][tally]:[]})
@@ -477,15 +472,14 @@ class chess():
 
             
             move = self.random.choice(allmoves)
-            move = "O-O"
-            print(moves)
             pgn.append(move)
             
             #if capture then 50 move rule resets
             if "x" in move:
                 movecount[1] = 0
 
-            
+            castle = [False,False]
+
             for i in moves:
                 if move in list(i.values())[0]:
                     if list(i.keys())[0][0].isupper() == switch:
@@ -494,25 +488,21 @@ class chess():
                             if list(i.keys())[0][0].isupper():
                                 move = "Q" + move[-4] + move[-3]
                             else:
-                                move = "q" + move[-4] + move[-3]   
-                        
+                                move = "q" + move[-4] + move[-3]  
+
                         if "O" in move:
                             if move == "O-O":
-                                moves.pop(moves.index(i)-1)
-                                moves.append({"Kg1":[]})
-                                moves.append({"Rf1":[]})
+                                castle[0] = True
+                                move = "Kg1"
 
                             elif move == "O-O-O":
-                                moves.remove("Ra8")
-                                moves.append({"Kc1":[]})
-                                moves.append({"Rd1":[]})
+                                castle[1] = True
+                                move = "Kc1"
+
                         else:
-  
                             move = list(i.keys())[0][0]+move[-2]+move[-1]
-                            
+                        
                         moves.remove(i)
-            for i in moves:
-                print(i)
 
                             
             #if pawn moves 50 move rule resets
@@ -523,9 +513,9 @@ class chess():
             sortedmoves = []
             continu = True
 
+            moves.append({" i1":[]})
             for j in moves:
                 if list(j.keys())[0][-2]+list(j.keys())[0][-1] == move[-2]+move[-1]:
-
                     sortedmoves.append({move:""})
                     continu = False
 
@@ -535,9 +525,16 @@ class chess():
                             sortedmoves.append({move:""})
                             sortedmoves.append(j)
                             continu = False
+                        elif castle[0] == True:
+                            sortedmoves.append({move:""})
+                            sortedmoves.append({"Rf1":""})
+
+                        elif castle[1] == True:
+                            sortedmoves.append({move:""})
+                            sortedmoves.append({"Rd1":""})
+
                         else:
                             sortedmoves.append(j)
-
 
                     elif list(j.keys())[0][-1] < move[-1]:
                         sortedmoves.append({move:""})
@@ -549,14 +546,16 @@ class chess():
                 else:
                     sortedmoves.append(j)
 
+            sortedmoves.remove({" i1":[]})
+
             movecount[1] +=1
             movecount[0] +=1
-
 
             if turn == "black":
                 turn = "white"
             else:
                 turn = "black"
+
 
             fen = self.pos2fen(sortedmoves,turn)
 
@@ -572,24 +571,17 @@ class chess():
             if movecount[1] == 100:
                 print("Draw by 50 move rule")
                 break
-            
-            for i in moves:
-                if list(i.values())[0]!= []:
-                    print(i)
-            exit()
+        
             board = self.fen2pos(fen)
 
-        
         for i in range(len(pgn)):
             if i%2==0:
                 print(f"{int((i+2)/2)}. {pgn[i]}",end=" ")
             else:
                 print(pgn[i],end=" ")
 
-            
-        print("\n\n")
 
-        
+        print("\n\n")
         
 
 #board = self.fen2pos("r1B1k2r/ppPp1p1n/n3p1p1/6Q1/qPq5/N1B5/1P2PPPP/R3K2R w KQkq - 0 1")
@@ -602,8 +594,8 @@ class chess():
 
 
 start = time.time()
-for i in range(1):
-    board = chess.fen2pos(None,"r3k2r/pppppppp/8/8/8/8/PPPPPPPP/R3K2R w KQkq - 0 1")
+for i in range(100):
+    board = chess.fen2pos(None,"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
     chess(board)
 
 
