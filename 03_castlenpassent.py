@@ -493,17 +493,26 @@ class chess():
                         if "O" in move:
                             if move == "O-O":
                                 castle[0] = True
-                                move = "Kg1"
+                                
+                                if turn == "white":
+                                    move = "Kg1"
+                                else:
+                                    move = "Kg8"
 
                             elif move == "O-O-O":
                                 castle[1] = True
-                                move = "Kc1"
+
+                                if turn == "white":
+                                    move = "Kc1"
+                                else:
+                                    move = "Kc8"
 
                         else:
                             move = list(i.keys())[0][0]+move[-2]+move[-1]
                         
                         moves.remove(i)
 
+            print(move)
                             
             #if pawn moves 50 move rule resets
             if "p" in move or "P" in move:
@@ -522,16 +531,21 @@ class chess():
                 elif continu == True:
                     if list(j.keys())[0][-1] == move[-1]:
                         if self.xaxis.index(list(j.keys())[0][-2])+1 > self.xaxis.index(move[-2])+1:
-                            sortedmoves.append({move:""})
-                            sortedmoves.append(j)
-                            continu = False
-                        elif castle[0] == True:
-                            sortedmoves.append({move:""})
-                            sortedmoves.append({"Rf1":""})
 
-                        elif castle[1] == True:
-                            sortedmoves.append({move:""})
-                            sortedmoves.append({"Rd1":""})
+                            if castle[0] == True:
+                                sortedmoves.append({"Rf1":""})
+                                sortedmoves.append({move:""})
+                                continu = False
+
+                            elif castle[1] == True:
+                                sortedmoves.append({move:""})
+                                sortedmoves.append({"Rd1":""})
+                                continu = False
+
+                            else:
+                                sortedmoves.append({move:""})
+                                sortedmoves.append(j)
+                                continu = False
 
                         else:
                             sortedmoves.append(j)
@@ -548,6 +562,9 @@ class chess():
 
             sortedmoves.remove({" i1":[]})
 
+            for i in sortedmoves:
+                print(i)
+
             movecount[1] +=1
             movecount[0] +=1
 
@@ -558,6 +575,8 @@ class chess():
 
 
             fen = self.pos2fen(sortedmoves,turn)
+            print(fen)
+
 
             if "k" not in fen.split(" ")[0]:
                 print("White won!")
@@ -595,7 +614,7 @@ class chess():
 
 start = time.time()
 for i in range(100):
-    board = chess.fen2pos(None,"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
+    board = chess.fen2pos(None,"r3k2r/pppppppp/8/8/8/8/PPPPPPPP/R3K2R w KQkq - 0 1")
     chess(board)
 
 

@@ -1,4 +1,7 @@
 import time
+import heatmap
+import copy
+
 class chess():
     #remember:
     #lowercase = black
@@ -275,7 +278,7 @@ class chess():
 
         return {square:available}
 
-    def pawn(self,square,board1,board2,enpassent):
+    def pawn(self,square,board1,board2):
         available = []
     
         xnum = self.xaxis.index(square[1:][0])+1
@@ -324,10 +327,6 @@ class chess():
                     else:
                         available.append(f"{square[1]}x{self.xaxis[xnum-2]}{ynum+1*x}=Q")
 
-        
-        if xnum<8:
-            if f"{self.xaxis[xnum]}{ynum+1*x}" == enpassent and ynum == special[2]:
-                available.append(f"{self.xaxis[xnum-1]}x{enpassent}")
 
 
         
@@ -425,7 +424,7 @@ class chess():
                     moves.append({i:queen})
 
                 elif i[:1] == piece[4]:
-                    moves.append(self.pawn(board[0][tally],board[0],board2,None)) 
+                    moves.append(self.pawn(board[0][tally],board[0],board2)) 
 
                 elif i[:1] == piece[5]:
                     moves.append(self.king(board[0][tally],board[0],board2))
@@ -465,64 +464,93 @@ class chess():
                     for j in list(i.values())[0]:
                         allmoves.append(j)
 
-            
-            move = self.random.choice(allmoves)
-            pgn.append(move)
-            
-            #if capture then 50 move rule resets
-            if "x" in move:
-                movecount[1] = 0
 
-            for i in moves:
-                if move in list(i.values())[0]:
-                    if list(i.keys())[0][0].isupper() == switch:
-                        #if pawn promotion spawn a queen and get rid of pawn
-                        if "=" in move:
-                            if list(i.keys())[0][0].isupper():
-                                move = "Q" + move[-4] + move[-3]
+
+
+            def evaluate(moves):
+                evaluation = 0
+                
+                for i in moves:
+                    temp = list(i.keys())[0] 
+                    heatm = heatmap.PieceMap(temp)
+                    heat = heatm[0]
+                    evaluation += heatm[1]*10
+                    evaluation += heat[int(temp[-1])-1][int(self.xaxis.index(temp[-2]))]
+                    print(temp,heat[int(temp[-1])-1][int(self.xaxis.index(temp[-2]))])
+
+                return evaluation
+                
+
+            evaluation = []
+            movecopy = copy.copy(moves)
+
+            for move in allmoves:
+                moves = copy.copy(movecopy)
+
+                #pgn.append(move)
+                
+                #if capture then 50 move rule resets
+                #if "x" in move:
+                #    movecount[1] = 0
+
+                for i in moves:
+                    if move in list(i.values())[0]:
+                        if list(i.keys())[0][0].isupper() == switch:
+                            #if pawn promotion spawn a queen and get rid of pawn
+                            if "=" in move:
+                                if list(i.keys())[0][0].isupper():
+                                    move = "Q" + move[-4] + move[-3]
+                                else:
+                                    move = "q" + move[-4] + move[-3]   
                             else:
-                                move = "q" + move[-4] + move[-3]   
-                        else:
-                            move = list(i.keys())[0][0]+move[-2]+move[-1]
-                        
-                        moves.remove(i)
-
+                                move = list(i.keys())[0][0]+move[-2]+move[-1]
                             
-            #if pawn moves 50 move rule resets
-            if "p" in move or "P" in move:
-                movecount[1] = 0
+                            moves.remove(i)
+                                
+                #if pawn moves 50 move rule resets
+                #if "p" in move or "P" in move:
+                #    movecount[1] = 0
 
-            #sorting the moves
-            sortedmoves = []
-            continu = True
+                #sorting the moves
+                sortedmoves = []
+                continu = True
 
-            moves.append({" i1":[]})
-            for j in moves:
-                if list(j.keys())[0][-2]+list(j.keys())[0][-1] == move[-2]+move[-1]:
-                    sortedmoves.append({move:""})
-                    continu = False
+                moves.append({" i1":[]})
+                for j in moves:
+                    if list(j.keys())[0][-2]+list(j.keys())[0][-1] == move[-2]+move[-1]:
+                        sortedmoves.append({move:""})
+                        continu = False
 
-                elif continu == True:
-                    if list(j.keys())[0][-1] == move[-1]:
-                        if self.xaxis.index(list(j.keys())[0][-2])+1 > self.xaxis.index(move[-2])+1:
+                    elif continu == True:
+                        if list(j.keys())[0][-1] == move[-1]:
+                            if self.xaxis.index(list(j.keys())[0][-2])+1 > self.xaxis.index(move[-2])+1:
+                                sortedmoves.append({move:""})
+                                sortedmoves.append(j)
+                                continu = False
+                            else:
+                                sortedmoves.append(j)
+
+                        elif list(j.keys())[0][-1] < move[-1]:
                             sortedmoves.append({move:""})
                             sortedmoves.append(j)
                             continu = False
+
                         else:
                             sortedmoves.append(j)
-
-                    elif list(j.keys())[0][-1] < move[-1]:
-                        sortedmoves.append({move:""})
-                        sortedmoves.append(j)
-                        continu = False
-
                     else:
                         sortedmoves.append(j)
-                else:
-                    sortedmoves.append(j)
 
-            sortedmoves.remove({" i1":[]})
+                sortedmoves.remove({" i1":[]})
+                
+                evaluation.append(evaluate(sortedmoves))
 
+
+
+
+
+            print(allmoves[evaluation.index(max(evaluation))])
+            print(allmoves)
+            exit()
             movecount[1] +=1
             movecount[0] +=1
 
@@ -535,21 +563,28 @@ class chess():
             fen = self.pos2fen(sortedmoves,turn)
 
             if "k" not in fen.split(" ")[0]:
-
+                print("White won!")
                 break
 
             if "K" not in fen.split(" ")[0]:
-
+                print("Black won!")
                 break 
             
             #After 100 half moves the game ends by draw
             if movecount[1] == 100:
-
+                print("Draw by 50 move rule")
                 break
         
             board = self.fen2pos(fen)
 
+        for i in range(len(pgn)):
+            if i%2==0:
+                print(f"{int((i+2)/2)}. {pgn[i]}",end=" ")
+            else:
+                print(pgn[i],end=" ")
 
+
+        print("\n\n")
         
 
 #board = self.fen2pos("r1B1k2r/ppPp1p1n/n3p1p1/6Q1/qPq5/N1B5/1P2PPPP/R3K2R w KQkq - 0 1")
@@ -562,7 +597,7 @@ class chess():
 
 
 start = time.time()
-for i in range(100):
+for i in range(1):
     board = chess.fen2pos(None,"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
     chess(board)
 
