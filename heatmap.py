@@ -77,31 +77,31 @@ def PieceMap(piece):
     piece_map = []
     if piece[0] == "p" or piece[0] == "P":
         piece_map = map_points[0]
-        val = 1
+        material = 1
 
     elif piece[0] == "b" or piece[0] == "B":
         piece_map = map_points[1]
-        val = 3.5
+        material = 3.5
 
     elif piece[0] == "n" or piece[0] == "N":
         piece_map = map_points[2]
-        val = 3
+        material = 3
 
     elif piece[0] == 'r' or piece[0] == "R":
         piece_map = map_points[3]
-        val = 5
+        material = 5
 
     elif piece[0] == "q" or piece[0] == "Q":
         piece_map = map_points[4]
-        val = 9
+        material = 9
 
     elif piece[0] == "k" or piece[0] == "K":
         piece_map = map_points[5]
-        val = 0
+        material = 999
 
     # check color of piece
     if piece[0].isupper():
-        return [piece_map,val]
+        return [piece_map,material]
         
     else:
-        return [np.flip(piece_map) * (-1),-1*val]
+        return [np.flip(piece_map) * (-1),-1*material]
