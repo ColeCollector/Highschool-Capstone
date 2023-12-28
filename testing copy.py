@@ -1,4 +1,3 @@
-
 import time
 import heatmap
 import copy
@@ -391,7 +390,7 @@ class chess():
         movecount = [0,0]
         pgn = []
         self.turn = "white"
-
+        lastmove = None
         while True:
             def findmoves(board):
                 moves = []
@@ -473,13 +472,18 @@ class chess():
 
             def evaluate(moves):
                 evaluation = 0
-                
+
+
+
                 for i in moves:
+
                     temp = list(i.keys())[0] 
+
                     heatm = heatmap.PieceMap(temp)
                     heat = heatm[0]
                     evaluation += heatm[1]*10
-                    evaluation += heat[int(temp[-1])-1][int(self.xaxis.index(temp[-2]))]
+                    evaluation += heat[8-int(temp[-1])][int(self.xaxis.index(temp[-2]))]
+
 
 
                 return evaluation
@@ -489,18 +493,20 @@ class chess():
             depth1 = []
             movecopy = copy.copy(moves)
             stop = [False,False]
+            
 
+            
             for move in allmoves:
+
                 if move == allmoves[-1]:
                     stop[0] = True
 
                 moves = copy.copy(movecopy)
 
-                #pgn.append(move)
-                
                 #if capture then 50 move rule resets
                 #if "x" in move:
                 #    movecount[1] = 0
+
 
                 for i in moves:
                     if move in list(i.values())[0]:
@@ -514,68 +520,20 @@ class chess():
                             else:
                                 move = list(i.keys())[0][0]+move[-2]+move[-1]
                             
-                            moves.remove(i)
-                                
-                #if pawn moves 50 move rule resets
-                #if "p" in move or "P" in move:
-                #    movecount[1] = 0
-
-                #sorting the moves
-                sortedmoves = []
-                continu = True
-
-                moves.append({" i1":[]})
-
-                for j in moves:
-                    if list(j.keys())[0][-2]+list(j.keys())[0][-1] == move[-2]+move[-1]:
-                        sortedmoves.append({move:""})
-                        continu = False
-
-                    elif continu == True:
-                        if list(j.keys())[0][-1] == move[-1]:
-                            if self.xaxis.index(list(j.keys())[0][-2])+1 > self.xaxis.index(move[-2])+1:
-                                sortedmoves.append({move:""})
-                                sortedmoves.append(j)
-                                continu = False
-                            else:
-                                sortedmoves.append(j)
-
-                        elif list(j.keys())[0][-1] < move[-1]:
-                            sortedmoves.append({move:""})
-                            sortedmoves.append(j)
-                            continu = False
-
-                        else:
-                            sortedmoves.append(j)
-                    else:
-                        sortedmoves.append(j)
-                
-
-                sortedmoves.remove({" i1":[]})
-
-
-                
-                def depth():
-                    depthboard = []
-
-                    for i in sortedmoves:
-                        depthboard.append(list(i.keys())[0])
-
-                    self.turn = "black"
-                    x = findmoves(depthboard)
-                    self.turn = "white"
-                    return x
+                            original = i
                     
 
-                depth1.append(depth())
+                    if list(i.keys())[0][1:] == move[-2]+move[-1]:
+                        moves.remove(i)
+                
+
+                #if pawn moves 50 move rule resets
 
 
-                #here we have to make new board and find all valid moves for other side... gl future me
+                moves.remove(original)
+                moves.append({move:""})
 
-
-                evaluation.append(evaluate(sortedmoves))
-
-
+                evaluation.append(evaluate(moves))
                 #at the end of the loop pick the best move
                 if stop[0] == True and stop[1] == False:
                     stop[1] = True
@@ -583,62 +541,52 @@ class chess():
                     #minmax algorithm
                     if self.turn == "white":
                         allmoves.append(allmoves[evaluation.index(max(evaluation))])
+
                     else:
                         allmoves.append(allmoves[evaluation.index(min(evaluation))])
-            
-            
-            for i in depth1:
-                print("\n")
-                allmoves = []
-                for j in i:
-                    for k in list(j.values())[0]:
-                        allmoves.append(k)
-                print(allmoves)
-
-            for move in allmoves:
-                pass
-            #for i in range(len(allmoves)):
-            #    print(allmoves[i],evaluation[i])
-
-
-
-            #print(f"\n\nchosen move:{move}")
 
             pgn.append(allmoves[-1])
 
             movecount[1] +=1
             movecount[0] +=1
 
-            if self.turn == "black":
-                self.turn = "white"
-
-            else:
-                self.turn = "black"
+            
+            king = [False,False]
 
 
-            fen = self.pos2fen(sortedmoves,self.turn)
 
-            print(fen)
+            print("\n\n")
+            for i in moves:
+                if list(i.keys())[0][0] == "K":
+                    king[0] = True
+                elif list(i.keys())[0][0] == "k":
+                    king[1] = True
 
 
-            if "k" not in fen.split(" ")[0]:
+            if king[1] == False:
                 print("White won!")
                 break
 
-            if "K" not in fen.split(" ")[0]:
+            elif king[0] == False:
                 print("Black won!")
                 break 
             
             #After 100 half moves the game ends by draw
-            if movecount[1] == 100:
+            if movecount[1] == 50:
                 print("Draw by 50 move rule")
                 break
     
-
+            if self.turn == "white":
+                self.turn = "black"
+            else:
+                self.turn = "white"
+                
             board = []
 
-            for i in range(len(sortedmoves)-1):
-                board.append(list(sortedmoves[i].keys())[0])
+            for i in range(len(moves)):
+                board.append(list(moves[i].keys())[0])
+
+
 
 
 
@@ -663,7 +611,7 @@ class chess():
 
 start = time.time()
 for i in range(1):
-    board = chess.fen2pos(None,"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
+    board = chess.fen2pos(None,"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR - 0 1")
     chess(board)
 
 print(f"\n\nProgram ran for {round((time.time()-start),3)} seconds\n")
