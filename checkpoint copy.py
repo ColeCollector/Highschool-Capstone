@@ -435,39 +435,35 @@ class chess():
                     tally+=1
                 return moves
 
-            moves = findmoves(board)
-
-                
-            allmoves = []
-            dupes = []
-
             if self.turn == "white":
                 switch = True
             else:
                 switch = False
 
-            for j in moves:
-                if list(j.keys())[0][0].isupper() == switch:
-                    for k in (list(j.values())[0]):
-                        if k in allmoves:
-                            dupes.append(k)
-                        else:
-                            allmoves.append(k)
+            def removedupes(moves):
+                allmoves = []
+                dupes = []
 
-            allmoves = []
+                for j in moves:
+                    if list(j.keys())[0][0].isupper() == switch:
+                        for k in (list(j.values())[0]):
+                            if k in allmoves:
+                                dupes.append(k)
+                            else:
+                                allmoves.append(k)
 
-            for j in moves:
-                if list(j.keys())[0][0].isupper() == switch:
-                    for k in (list(j.values())[0]):
-                        if k in dupes:
-                            list(j.values())[0][list(j.values())[0].index(k)] = f"{k[:1]}{list(j.keys())[0][1]}{k[1:]}"
+                allmoves = []
 
-
-            for i in moves:
-                if (self.turn == "white" and list(i.keys())[0][0].isupper() == True) or (self.turn == "black" and list(i.keys())[0][0].isupper() == False):
-                    for j in list(i.values())[0]:
-                        allmoves.append(j)
-
+                for j in moves:
+                    if list(j.keys())[0][0].isupper() == switch:
+                        for k in (list(j.values())[0]):
+                            if k in dupes:
+                                list(j.values())[0][list(j.values())[0].index(k)] = f"{k[:1]}{list(j.keys())[0][1]}{k[1:]}"
+                                allmoves.append(f"{k[:1]}{list(j.keys())[0][1]}{k[1:]}")
+                            else:
+                                allmoves.append(k)
+                
+                return allmoves
 
             def evaluate(moves):
                 evaluation = 0
@@ -483,26 +479,7 @@ class chess():
 
                 return evaluation
             
-            devaluation = []
-            evaluation = []
-            depth1 = []
-            movecopy = copy.copy(moves)
-            stop = [False,False]
-            
-
-            
-            for move in allmoves:
-
-                if move == allmoves[-1]:
-                    stop[0] = True
-
-                moves = copy.copy(movecopy)
-
-                #if capture then 50 move rule resets
-                #if "x" in move:
-                #    movecount[1] = 0
-
-
+            def modify(moves,move):
                 take = None
                 for i in moves:
                     if move in list(i.values())[0]:
@@ -521,7 +498,6 @@ class chess():
 
                     if list(i.keys())[0][1:] == move[-2]+move[-1]:
                         take = i
-                
 
                 #if pawn moves 50 move rule resets
                 if take != None:
@@ -529,211 +505,167 @@ class chess():
 
                 moves.remove(original)
                 moves.append({move:""})
+                return moves
 
+            def depth(moves):
+                depthboard = []
+
+                for i in moves:
+                    depthboard.append(list(i.keys())[0])
                 
-                def depth():
-                    depthboard = []
+                #looking at the position from black's perspecifive
+                if self.turn == "white":
+                    self.turn = "black"
+                else:
+                    self.turn = "white"
 
-                    for i in moves:
-                        depthboard.append(list(i.keys())[0])
+                newboard = findmoves(depthboard)
+                
+                if self.turn == "black":
+                    self.turn = "white"
+                else:
+                    self.turn = "black"
+
+                return newboard
                     
-                    #looking at the position from black's perspecifive
-                    if self.turn == "white":
-                        self.turn = "black"
-                    else:
-                        self.turn = "white"
-
-                    newboard = findmoves(depthboard)
-                    
-                    if self.turn == "black":
-                        self.turn = "white"
-                    else:
-                        self.turn = "black"
-
-
-                    return newboard
-                    
-
-                depth1.append(depth())
-
-
-
             
-            #worst code ever:
-                
+
+            evaluation = []
+            depth1 = []
+            depth2 = []
+            depth3 = []
+
+            moves = findmoves(board)
+            allmoves = removedupes(moves)
+            movecopy = copy.copy(moves)
+            
+            for move in allmoves:
+                moves = copy.copy(movecopy)
+                moves = modify(moves,move)
+                depth1.append(depth(moves))
+
+
+
+
             if self.turn == "white":
                 self.turn = "black"
+                switch = False
             else:
                 self.turn = "white"
-
-            counter = 0
-
-            for dmoves in depth1:
-
-                
-                dallmoves = []
-                dupes = []
-                for j in dmoves:
-                    if list(j.keys())[0][0].isupper() != switch:
-                        for k in (list(j.values())[0]):
-                            if k in dallmoves:
-                                dupes.append(k)
-                            else:
-                                dallmoves.append(k)
-
-                dallmoves = []
-
-                for j in dmoves:
-                    if list(j.keys())[0][0].isupper() != switch:
-                        for k in (list(j.values())[0]):
-                            if k in dupes:
-                                list(j.values())[0][list(j.values())[0].index(k)] = f"{k[:1]}{list(j.keys())[0][1]}{k[1:]}"
+                switch = True
 
 
-                for i in dmoves:
-                    if (self.turn == "white" and list(i.keys())[0][0].isupper() == True) or (self.turn == "black" and list(i.keys())[0][0].isupper() == False):
-                        for j in list(i.values())[0]:
-                            dallmoves.append(j)
 
-                
-                dmovecopy = copy.copy(dmoves)
+            for d1moves in depth1:
 
-                devaluation = []
-                stop = [False,False]
+                d1allmoves = removedupes(d1moves)
+                d1movecopy = copy.copy(d1moves)
 
-                for move in dallmoves:
-                    if move == dallmoves[-1]:
-                        stop[0] = True
-
-                    dmoves = copy.copy(dmovecopy)
+                for move in d1allmoves:
+                    d1moves = copy.copy(d1movecopy)
+                    d1moves = modify(d1moves,move)
+                    depth2.append(depth(d1moves))
 
 
-                    take = None
-                    for i in dmoves:
-                        if move in list(i.values())[0]:
-                            if list(i.keys())[0][0].isupper() != switch:
-                                #if pawn promotion spawn a queen and get rid of pawn
-                                if "=" in move:
-                                    if list(i.keys())[0][0].isupper():
-                                        move = "Q" + move[-4] + move[-3]
-                                    else:
-                                        move = "q" + move[-4] + move[-3]   
-                                else:
-                                    move = list(i.keys())[0][0]+move[-2]+move[-1]
-                                
-                                original = i
-                        
 
-                        if list(i.keys())[0][1:] == move[-2]+move[-1]:
-                            take = i
-
-                    if take != None:
-                        dmoves.remove(take)
-
-                    dmoves.remove(original)
-                    dmoves.append({move:""})
-                    
+            #switching colors so we can check for black's best move
+            if self.turn == "white":
+                self.turn = "black"
+                switch = False
+            else:
+                self.turn = "white"
+                switch = True
 
 
-                    devaluation.append(evaluate(dmoves))
-
-                    #at the end of the loop pick the best move
-                    if stop[0] == True and stop[1] == False:
-                        stop[1] = True
-                        
-                        #minmax algorithm
-                        if self.turn == "white":
-                            dallmoves.append(dallmoves[devaluation.index(max(devaluation))])
-
-                        else:
-                            dallmoves.append(dallmoves[devaluation.index(min(devaluation))])
-
-                
-                if self.turn == "white":
-                    evaluation.append(max(devaluation))
-                else:
-                    evaluation.append(min(devaluation))
+            for d2moves in depth2:
+                d2allmoves = removedupes(d2moves)
+                d2movecopy = copy.copy(d2moves)
+                for move in d2allmoves:
+                    d2moves = copy.copy(d2movecopy)
+                    d2moves = modify(d2moves,move)
+                    depth3.append(depth(d2moves))
 
 
-                #if self.turn == "white":
-                    #print(allmoves[counter],move,max(devaluation))
-                #else:
-                    #print(allmoves[counter],move,min(devaluation))
 
-                counter+=1
 
             if self.turn == "white":
-                move = allmoves[evaluation.index(min(evaluation))]
+                self.turn = "black"
+                switch = False
             else:
-                move = allmoves[evaluation.index(max(evaluation))]
+                self.turn = "white"
+                switch = True
 
 
 
 
-            if move == allmoves[-1]:
-                stop[0] = True
 
-            moves = copy.copy(movecopy)
+            for d3moves in depth3:
 
-            #if capture then 50 move rule resets
-            #if "x" in move:
-            #    movecount[1] = 0
+                d3allmoves = removedupes(d3moves)
+                d3movecopy = copy.copy(d3moves)
 
-            take = None
-            for i in moves:
-                if move in list(i.values())[0]:
-                    if list(i.keys())[0][0].isupper() == switch:
-                        #if pawn promotion spawn a queen and get rid of pawn
-                        if "=" in move:
-                            if list(i.keys())[0][0].isupper():
-                                move = "Q" + move[-4] + move[-3]
-                            else:
-                                move = "q" + move[-4] + move[-3]   
-                        else:
-                            move = list(i.keys())[0][0]+move[-2]+move[-1]
+                #devaluation = []
+                #stop = [False,False]
+
+                for move in d3allmoves:
+                    #if move == dallmoves[-1]:
+                    #    stop[0] = True
+
+                    d3moves = copy.copy(d3movecopy)
+                    d3moves = modify(d3moves,move)
+
+
+                    evaluation.append(evaluate(d3moves))
+
+                    #at the end of the loop pick the best move
+                    #if stop[0] == True and stop[1] == False:
+                    #    stop[1] = True
                         
-                        original = i
+                        #if white's turn pick best move for white
+                    #    if self.turn == "white":
+                    #        dallmoves.append(dallmoves[devaluation.index(max(devaluation))])
+                        
+                        #if black's turn pick best move for black
+                    #    else:
+                    #        dallmoves.append(dallmoves[devaluation.index(min(devaluation))])
+
                 
 
-                if list(i.keys())[0][1:] == move[-2]+move[-1]:
-                    take = i
-
-            #if pawn moves 50 move rule resets
-
-            if take != None:
-                moves.remove(take)
-
-            moves.remove(original)
-            moves.append({move:""})
-
-
+                #if self.turn == "white":
+                #    evaluation.append(max(devaluation))
+                #else:
+                #    evaluation.append(min(devaluation))
             
+            print(evaluation)
+            break
 
-            #print(f"\n\nchosen move:{allmoves[evaluation.index(max(evaluation))]}")
 
 
             if self.turn == "white":
                 pgn.append(allmoves[evaluation.index(min(evaluation))])
-                #print(f"chosen move:{pgn[-1]}")
-                #lastmove = pgn[-1]
-
+                switch = False
+                move = allmoves[evaluation.index(min(evaluation))]
+                
             else:
                 pgn.append(allmoves[evaluation.index(max(evaluation))])
-                #print(f"chosen move:{pgn[-1]}")
-                #lastmove = pgn[-1]
+                switch = True
+                move = allmoves[evaluation.index(max(evaluation))]
+
+
+            moves = copy.copy(movecopy)
+            moves = modify(moves,move)
+
 
             movecount[1] +=1
             movecount[0] +=1
 
-            
             king = [False,False]
 
 
-
-            #print("\n\n")
             for i in moves:
                 if list(i.keys())[0][0] == "K":
                     king[0] = True
+
                 elif list(i.keys())[0][0] == "k":
                     king[1] = True
 
@@ -747,23 +679,20 @@ class chess():
                 break 
             
             #After 100 half moves the game ends by draw
-            if movecount[1] == 50:
+            if movecount[1] == 1:
                 print("Draw by 50 move rule")
                 break
-    
 
             board = []
 
             for i in range(len(moves)):
                 board.append(list(moves[i].keys())[0])
 
-
         for i in range(len(pgn)):
             if i%2==0:
                 print(f"{int((i+2)/2)}. {pgn[i]}",end=" ")
             else:
                 print(pgn[i],end=" ")
-
 
         print("\n\n")
         

@@ -13,6 +13,17 @@ np.array([
     [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 ]),
 
+#experimenting:
+#np.array([
+#    [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+#    [5.4, 5.6, 5.8, 6.0, 6.0, 5.8, 5.6, 5.4],
+#    [4.4, 4.6, 4.8, 5.0, 5.0, 4.8, 4.6, 4.4],
+#    [3.4, 3.6, 3.8, 4.0, 4.0, 3.8, 3.6, 3.4],
+#    [2.4, 2.6, 2.8, 3.0, 3.0, 2.8, 2.6, 2.4],
+#    [1.4, 1.6, 1.8, 2.0, 2.0, 1.8, 1.6, 1.4],
+#    [0.4, 0.6, 0.8, 1.0, 1.0, 0.8, 0.6, 0.4],
+#]),
+
 # BISHOP - INDEX - 1
 np.array([
     [-2.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -2.0],
@@ -81,7 +92,7 @@ def PieceMap(piece):
 
     elif piece[0] == "b" or piece[0] == "B":
         piece_map = map_points[1]
-        material = 3.5
+        material = 3.1
 
     elif piece[0] == "n" or piece[0] == "N":
         piece_map = map_points[2]
@@ -93,11 +104,11 @@ def PieceMap(piece):
 
     elif piece[0] == "q" or piece[0] == "Q":
         piece_map = map_points[4]
-        material = 9
+        material = 9.5
 
     elif piece[0] == "k" or piece[0] == "K":
         piece_map = map_points[5]
-        material = 999
+        material = 1000
 
     # check color of piece
     if piece[0].isupper():
