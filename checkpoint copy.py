@@ -529,8 +529,11 @@ class chess():
                 return newboard
                     
             
-
-            evaluation = []
+            layer0 = []
+            layer1 = []
+            layer2 = []
+            layer3 = []
+            layer4 = []
             depth1 = []
             depth2 = []
             depth3 = []
@@ -546,7 +549,7 @@ class chess():
 
 
 
-
+            #switching colors
             if self.turn == "white":
                 self.turn = "black"
                 switch = False
@@ -557,18 +560,16 @@ class chess():
 
 
             for d1moves in depth1:
-
                 d1allmoves = removedupes(d1moves)
                 d1movecopy = copy.copy(d1moves)
-
                 for move in d1allmoves:
                     d1moves = copy.copy(d1movecopy)
                     d1moves = modify(d1moves,move)
                     depth2.append(depth(d1moves))
+                depth2.append(None)
 
 
-
-            #switching colors so we can check for black's best move
+            #switching colors
             if self.turn == "white":
                 self.turn = "black"
                 switch = False
@@ -578,78 +579,71 @@ class chess():
 
 
             for d2moves in depth2:
-                d2allmoves = removedupes(d2moves)
-                d2movecopy = copy.copy(d2moves)
-                for move in d2allmoves:
-                    d2moves = copy.copy(d2movecopy)
-                    d2moves = modify(d2moves,move)
-                    depth3.append(depth(d2moves))
+                if d2moves== None:
+                    depth3.append(None)
+                else:
+                    d2allmoves = removedupes(d2moves)
+                    d2movecopy = copy.copy(d2moves)
+                    for move in d2allmoves:
+                        d2moves = copy.copy(d2movecopy)
+                        d2moves = modify(d2moves,move)
+                        depth3.append(depth(d2moves))
+                    depth3.append(None)
 
-
-
-
+            #switching colors
             if self.turn == "white":
                 self.turn = "black"
                 switch = False
+
             else:
                 self.turn = "white"
                 switch = True
 
 
-
-
-
             for d3moves in depth3:
+                if d3moves == None:
+                    layer2.append(layer1)
+                    layer1 = []
+                else:
+                    d3allmoves = removedupes(d3moves)
+                    d3movecopy = copy.copy(d3moves)
+                    layer0 = []
 
-                d3allmoves = removedupes(d3moves)
-                d3movecopy = copy.copy(d3moves)
-
-                #devaluation = []
-                #stop = [False,False]
-
-                for move in d3allmoves:
-                    #if move == dallmoves[-1]:
-                    #    stop[0] = True
-
+                    move = d3allmoves[0]
                     d3moves = copy.copy(d3movecopy)
                     d3moves = modify(d3moves,move)
+                    layer0.append(evaluate(d3moves))
 
-
-                    evaluation.append(evaluate(d3moves))
-
-                    #at the end of the loop pick the best move
-                    #if stop[0] == True and stop[1] == False:
-                    #    stop[1] = True
+                    
+                    if self.turn == "white":
+                        layer1.append(min(layer0))
                         
-                        #if white's turn pick best move for white
-                    #    if self.turn == "white":
-                    #        dallmoves.append(dallmoves[devaluation.index(max(devaluation))])
-                        
-                        #if black's turn pick best move for black
-                    #    else:
-                    #        dallmoves.append(dallmoves[devaluation.index(min(devaluation))])
-
-                
-
-                #if self.turn == "white":
-                #    evaluation.append(max(devaluation))
-                #else:
-                #    evaluation.append(min(devaluation))
+                    else:
+                        layer1.append(max(layer0))
             
-            print(evaluation)
-            break
+            for i in layer2:
+                if i!= []:
+                    if self.turn == "white":
+                        layer3.append(min(i))
+                    else:
+                        layer3.append(max(i))
 
-
-
+                else:
+                    if self.turn == "white":
+                        layer4.append(max(layer3))
+                    else:
+                        layer4.append(min(layer3))
+                    layer3 = []
+            
             if self.turn == "white":
-                pgn.append(allmoves[evaluation.index(min(evaluation))])
+                pgn.append(allmoves[layer4.index(min(layer4))])
                 switch = False
-                move = allmoves[evaluation.index(min(evaluation))]
+                move = allmoves[layer4.index(min(layer4))]
                 
             else:
-                pgn.append(allmoves[evaluation.index(max(evaluation))])
+                pgn.append(allmoves[layer4.index(max(layer4))])
                 switch = True
-                move = allmoves[evaluation.index(max(evaluation))]
+                move = allmoves[layer4.index(max(layer4))]
 
 
             moves = copy.copy(movecopy)
@@ -671,18 +665,18 @@ class chess():
 
 
             if king[1] == False:
-                print("White won!")
+                print("White \033[1;32;40mwon!")
                 break
 
             elif king[0] == False:
-                print("Black won!")
+                print("Black \033[1;32;40mwon!")
                 break 
             
             #After 100 half moves the game ends by draw
-            if movecount[1] == 1:
-                print("Draw by 50 move rule")
+            if movecount[1] == 5:
+                print("\033[1;30;40mDraw\033[0m  by 50 move rule")
                 break
-
+            
             board = []
 
             for i in range(len(moves)):
