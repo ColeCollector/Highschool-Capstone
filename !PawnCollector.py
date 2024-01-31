@@ -391,68 +391,67 @@ class chess():
         pgn = []
         self.turn = "white"
         #lastmove = None
-        while True:
-            if board == ['ka8', 'kf2', 'Kh1', 'Rb1', 'ra7']:
-                pass
-            #THE PROBLEM IS THAT THE KING HEATMAP IS NOT RESET
-            def findmoves(board):
-                moves = []
-                board2 = []
 
-                #an homage to andrew
-                tally = 0
+        def findmoves(board):
+            moves = []
+            board2 = []
 
-                for i in board:
-                    board2.append(i[1:])
+            #an homage to andrew
+            tally = 0
 
-                if self.turn == "white":
-                    piece = ["B","R","N","Q","P","K"]
+            for i in board:
+                board2.append(i[1:])
 
-                elif self.turn == "black":
-                    piece = ["b","r","n","q","p","k"]
+            if self.turn == "white":
+                piece = ["B","R","N","Q","P","K"]
 
-                for i in board:
+            elif self.turn == "black":
+                piece = ["b","r","n","q","p","k"]
 
-                    if i[:1] == piece[0]:
-                        moves.append(self.bishop(board[tally],board,board2))
+            for i in board:
 
-                    elif i[:1] == piece[1]:
-                        moves.append(self.rook(board[tally],board,board2))
+                if i[:1] == piece[0]:
+                    moves.append(self.bishop(board[tally],board,board2))
 
-                    elif i[:1] == piece[2]:
-                        moves.append(self.knight(board[tally],board,board2))
-                    
-                    elif i[:1] == piece[3]:
-                        queen = self.bishop(board[tally],board,board2)[i]+self.rook(board[tally],board,board2)[i]
-                        queen.sort()
-                        moves.append({i:queen})
+                elif i[:1] == piece[1]:
+                    moves.append(self.rook(board[tally],board,board2))
 
-                    elif i[:1] == piece[4]:
-                        moves.append(self.pawn(board[tally],board,board2)) 
+                elif i[:1] == piece[2]:
+                    moves.append(self.knight(board[tally],board,board2))
+                
+                elif i[:1] == piece[3]:
+                    queen = self.bishop(board[tally],board,board2)[i]+self.rook(board[tally],board,board2)[i]
+                    queen.sort()
+                    moves.append({i:queen})
 
-                    elif i[:1] == piece[5]:
-                        moves.append(self.king(board[tally],board,board2))
+                elif i[:1] == piece[4]:
+                    moves.append(self.pawn(board[tally],board,board2)) 
 
-                    else:
-                        moves.append({board[tally]:[]})
+                elif i[:1] == piece[5]:
+                    moves.append(self.king(board[tally],board,board2))
 
-                    tally+=1
-                return moves
+                else:
+                    moves.append({board[tally]:[]})
 
-            def removedupes(moves):
+                tally+=1
+            return moves
+
+        def removedupes(moves):
+
+            allmoves = []
+            dupes = []
+
+            for j in moves:
+                if list(j.keys())[0][0].isupper() == switch:
+                    for k in (list(j.values())[0]):
+                        if k in allmoves:
+                            dupes.append(k)
+                        else:
+                            allmoves.append(k)
+
+            
+            if dupes !=[]:
                 allmoves = []
-                dupes = []
-
-                for j in moves:
-                    if list(j.keys())[0][0].isupper() == switch:
-                        for k in (list(j.values())[0]):
-                            if k in allmoves:
-                                dupes.append(k)
-                            else:
-                                allmoves.append(k)
-
-                allmoves = []
-
                 for j in moves:
                     if list(j.keys())[0][0].isupper() == switch:
                         for k in (list(j.values())[0]):
@@ -461,129 +460,127 @@ class chess():
                                 allmoves.append(f"{k[:1]}{list(j.keys())[0][1]}{k[1:]}")
                             else:
                                 allmoves.append(k)
-                
-                return allmoves
-
-            def end(square,eheatmap):
-                x = int(self.xaxis.index(square[-2]))
-                y = 8 - int(square[-1])
-
-                for row in range(0,8):
-                    for collumn in range(0,8):
-                        differ1 = abs(x-row)
-                        differ2 = abs(y-collumn)
-
-                        if differ1>differ2:
-                            eheatmap[collumn][row] += 500-50*differ1
-
-                        else:
-                            eheatmap[collumn][row] += 500-50*differ2
-
-                return eheatmap
             
-            def evaluate(moves):
+            return allmoves
 
-                evaluation = 0
-                endgame = 0
-                eheatmap = [
-                [0,0,0,0,0,0,0,0],
-                [0,0,0,0,0,0,0,0],
-                [0,0,0,0,0,0,0,0],
-                [0,0,0,0,0,0,0,0],
-                [0,0,0,0,0,0,0,0],
-                [0,0,0,0,0,0,0,0],
-                [0,0,0,0,0,0,0,0],
-                [0,0,0,0,0,0,0,0]]
+        def end(square,eheatmap):
+            x = int(self.xaxis.index(square[-2]))
+            y = 8 - int(square[-1])
 
-                for i in moves:
-                    if list(i.keys())[0][0]!="P" and list(i.keys())[0][0]!="p":
-                        endgame+=1
-                    
-                    else:
-                        eheatmap = end(list(i.keys())[0],eheatmap)
-                
-                if endgame<=4:
-                    heatmap.map_points[5] = eheatmap
-                
+            for row in range(0,8):
+                for collumn in range(0,8):
+                    eheatmap[collumn][row]-=collumn
+                    differ1 = abs(x-row)
+                    differ2 = abs(y-collumn)
 
-                    
-                
-                for i in moves:
-                    
-                    temp = list(i.keys())[0] 
-                    heatm = heatmap.PieceMap(temp)
-                    heat = heatm[0]
-                    
-
-                    if temp[0].isupper() == True:
-                        evaluation += heatm[1]*10
-                        evaluation += heat[8-int(temp[-1])][int(self.xaxis.index(temp[-2]))]
+                    if differ1>differ2:
+                        eheatmap[collumn][row] += 500-50*differ1
 
                     else:
-                        evaluation -= heatm[1]*10
+                        eheatmap[collumn][row] += 500-50*differ2
 
-                        if heatmap.map_points[5] == eheatmap:
-                            evaluation -= heat[8-int(temp[-1])][int(self.xaxis.index(temp[-2]))]
-                        else:
-                            evaluation -= heat[int(temp[-1])-1][7-int(self.xaxis.index(temp[-2]))]  
-                    
+            return eheatmap
+        
+        def evaluate(moves):
+
+            evaluation = 0
+            endgame = 0
+            eheatmap = [
+            [0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0]]
+
+            for i in moves:
+                if list(i.keys())[0][0]!="P" and list(i.keys())[0][0]!="p":
+                    endgame+=1
                 
-                return evaluation
+                else:
+                    eheatmap = end(list(i.keys())[0],eheatmap)
             
-            def modify(moves,move):
-                take = None
-                for i in moves:
-                    if move in list(i.values())[0]:
-                        if list(i.keys())[0][0].isupper() == switch:
-                            #if pawn promotion spawn a queen and get rid of pawn
-                            if "=" in move:
-                                if list(i.keys())[0][0].isupper():
-                                    move = "Q" + move[-4] + move[-3]
-                                else:
-                                    move = "q" + move[-4] + move[-3]   
+            if endgame<=4:
+                heatmap.map_points[5] = eheatmap
+            
+            else:
+                heatmap.map_points[5] = heatmap.map_points[6]
+
+            for i in moves:
+                
+                temp = list(i.keys())[0] 
+                heatm = heatmap.PieceMap(temp)
+                heat = heatm[0]
+                
+
+                if temp[0].isupper() == True:
+                    evaluation += heatm[1]*10
+                    evaluation += heat[8-int(temp[-1])][int(self.xaxis.index(temp[-2]))]
+
+                else:
+                    evaluation -= heatm[1]*10
+
+                    if heatmap.map_points[5] == eheatmap:
+                        evaluation -= heat[8-int(temp[-1])][int(self.xaxis.index(temp[-2]))]
+                    else:
+                        evaluation -= heat[int(temp[-1])-1][7-int(self.xaxis.index(temp[-2]))]  
+                
+
+            return evaluation
+        
+        def modify(moves,move):
+            take = None
+            for i in moves:
+                if move in list(i.values())[0]:
+                    if list(i.keys())[0][0].isupper() == switch:
+                        #if pawn promotion spawn a queen and get rid of pawn
+                        if "=" in move:
+                            if list(i.keys())[0][0].isupper():
+                                move = "Q" + move[-4] + move[-3]
                             else:
-                                move = list(i.keys())[0][0]+move[-2]+move[-1]
-                            
-                            original = i
-                    
-
-                    if list(i.keys())[0][1:] == move[-2]+move[-1]:
-                        take = i
-
-                #if pawn moves 50 move rule resets
-                if take != None:
-                    moves.remove(take)
-
-                moves.remove(original)
-                moves.append({move:""})
-                return moves
-
-            def depth(moves):
-                depthboard = []
-
-                for i in moves:
-                    depthboard.append(list(i.keys())[0])
+                                move = "q" + move[-4] + move[-3]   
+                        else:
+                            move = list(i.keys())[0][0]+move[-2]+move[-1]
+                        
+                        original = i
                 
-                #looking at the position from black's perspecifive
-                if self.turn == "white":
-                    self.turn = "black"
-                else:
-                    self.turn = "white"
 
-                newboard = findmoves(depthboard)
-                
-                if self.turn == "black":
-                    self.turn = "white"
-                else:
-                    self.turn = "black"
+                if list(i.keys())[0][1:] == move[-2]+move[-1]:
+                    take = i
 
-                return newboard
+            if take != None:
+                moves.remove(take)
 
-            def gameloop(mooves):
-                if mooves == [{'ra3': []}, {'kf2': []}, {'Rg1': ['Ra1', 'Rb1', 'Rc1', 'Rd1', 'Re1', 'Rf1', 'Rg2', 'Rg3', 'Rg4', 'Rg5', 'Rg6', 'Rg7', 'Rg8']}, {'Kh2': ''}]:
-                    pass
+            moves.remove(original)
+            moves.append({move:""})
+            return moves
+
+        def depth(moves):
+            depthboard = []
+
+            for i in moves:
+                depthboard.append(list(i.keys())[0])
+            
+            #looking at the position from black's perspecifive
+            if self.turn == "white":
+                self.turn = "black"
+            else:
+                self.turn = "white"
+
+            newboard = findmoves(depthboard)
+            
+            if self.turn == "black":
+                self.turn = "white"
+            else:
+                self.turn = "black"
+
+            return newboard
+
+        def gameloop(moves):
                 king = [False,False]
-                for i in mooves:
+                for i in moves:
                     if list(i.keys())[0][0] == "K":
                         king[0] = True
 
@@ -592,13 +589,15 @@ class chess():
 
 
                 if king[1] == False:
-                    return 999999
+                    return 10000
 
-                if king[0] == False:
-                    return -999999
+                elif king[0] == False:
+                    return -10000
                 
                 return None
-                
+        
+        while True:
+
             if self.turn == "white":
                 switch = True
             else:
@@ -612,7 +611,6 @@ class chess():
             depth1 = []
             depth2 = []
             depth3 = []
-            alld1moves = []
 
             rid1 = []
             rid2 = []
@@ -622,14 +620,18 @@ class chess():
             allmoves = removedupes(moves)
             movecopy = copy.copy(moves)
             
+
+            #print(round((time.time()-start),3))
             for move in allmoves:
                 moves = copy.copy(movecopy)
                 moves = modify(moves,move)
+
+                
                 x = gameloop(moves)
                 if x == None:
                     depth1.append(depth(moves))
                 else:
-                    rid1.append([x, allmoves.index(move)])
+                    rid1.append([x*4, allmoves.index(move)])
 
 
             #switching colors
@@ -640,13 +642,11 @@ class chess():
                 self.turn = "white"
                 switch = True
 
-
+            #print(round((time.time()-start),3))
             for d1moves in depth1:
                 
                 d1allmoves = removedupes(d1moves)
-                alld1moves.append(d1allmoves)
                 d1movecopy = copy.copy(d1moves)
-
 
                 for move in d1allmoves:
 
@@ -654,19 +654,15 @@ class chess():
 
                     d1moves = copy.copy(d1movecopy)
                     d1moves = modify(d1moves,move)
-                    #print(move)
-                    if move == "Kxa2":
-                        print("1293712093")
 
                     x = gameloop(d1moves)
                     if x == None:
                         depth2.append(depth(d1moves))
                     else:
                         #print(allmoves[depth1.index(d1movecopy)],move)
-                        rid2.append([x,depth1.index(d1movecopy)])
-
+                        rid2.append([x*3,depth1.index(d1movecopy)])
+                
                 depth2.append(None)
-
 
             #switching colors
             if self.turn == "white":
@@ -676,6 +672,7 @@ class chess():
                 self.turn = "white"
                 switch = True
 
+            #print(round((time.time()-start),3))
             for d2moves in depth2:
                 if d2moves == None:
                     depth3.append(None)
@@ -690,12 +687,10 @@ class chess():
                             depth3.append(depth(d2moves))
                         else:
                             #print(d1allmoves[depth2.index(d2movecopy)],move)
-                            rid3.append([x,depth2.index(d2movecopy)])
+                            rid3.append([x*2,depth2.index(d2movecopy)])
                         #print(depth2.index(d2movecopy))
 
                     depth3.append(None)
-
-            #exit()
 
 
             #switching colors
@@ -709,7 +704,9 @@ class chess():
 
             
             track = 0
-            alpha = []
+            #joe = [0,0]
+            #print(round((time.time()-start),3))
+            #print(len(depth3))
             for d3moves in depth3:
                 if d3moves == None:
                     layer2.append(layer1)
@@ -718,18 +715,61 @@ class chess():
                 else:
                     d3allmoves = removedupes(d3moves)
                     d3movecopy = copy.copy(d3moves)
-                    
+    
                     for move in d3allmoves:
                         d3moves = copy.copy(d3movecopy)
                         d3moves = modify(d3moves,move)
 
-                        if move == d3allmoves[0]:
-                            alpha.append(evaluate(d3moves))
-                            layer0.append(alpha[-1])
 
-                        if not alpha[-1]>=max(alpha):
+                        #Perfect but slow code:
+                        layer0.append(evaluate(d3moves))
+
+
+                        #Algorithm +30% speed -30% Efficiency:
+                        """
+                        if layer1 == [] or move == d3allmoves[0]:
+                            #joe[0]+=1
                             layer0.append(evaluate(d3moves))
+                         
+                        else:   
+                            #print("\n",layer2)
+                            #print(layer1)
+                            #print(layer0)
+                            #time.sleep(1)
 
+                            #attempt 1 
+                            
+                            if layer2!=[]:
+                                if layer2[-1]!=[]:
+
+                                    if self.turn == "black":
+                                        if min(layer0)>max(layer2[-1]):
+                                            break
+                                    else:
+                                        if max(layer0)<min(layer2[-1]):
+                                            break
+
+                                elif self.turn == "black":
+                                    if min(layer0)>max(layer1):
+                                        break
+                                else:
+                                    if max(layer0)<min(layer1):
+                                        break
+
+                            elif self.turn == "black":
+                                if min(layer0)>max(layer1):
+                                    break
+                            else:
+                                if max(layer0)<min(layer1):
+                                    break      
+                        
+                            #joe[0]+=1
+                            layer0.append(evaluate(d3moves))
+                        """
+
+
+
+                            
                     if self.turn == "white":
                         layer1.append(max(layer0))
                         
@@ -744,7 +784,11 @@ class chess():
                             layer1.append(i[0])
 
                     layer0 = []
-            
+
+            #print(joe)
+                    
+
+
             track = 0
             for i in layer2:
                 if i!= []:
@@ -764,14 +808,10 @@ class chess():
                     layer3 = []
                     track+=1
 
-            #print(rid1)
-            #print(rid2)
-            #print(rid3)
 
-
+            #inserting the checkmate evaluation between the other moves
             p = 0
-            #print("\n")
-
+            actual = []
 
             for i in allmoves:
                 if len(rid1)>0:
@@ -779,10 +819,11 @@ class chess():
                         if allmoves.index(i) == len(layer4):
                             layer4.append(rid1[0][0])
                         else:
-                            layer4[allmoves.index(i)] = rid1[0][0]
-                        p = -1
-                print(i,layer4[allmoves.index(i)+p])
-
+                            layer4[allmoves.index(i)-1] = rid1[0][0]
+                            p = -1
+                actual.append(layer4[allmoves.index(i)+p])
+                #print(i,layer4[allmoves.index(i)+p])
+            layer4 = actual
 
 
             if self.turn == "white":
@@ -813,32 +854,43 @@ class chess():
                 elif list(i.keys())[0][0] == "k":
                     king[1] = True
 
-
+            #If no black king, white wins
             if king[1] == False:
                 print("White \033[1;32;40mwon!\033[0m")
                 break
-
+            
+            #if no white king, black wins
             elif king[0] == False:
                 print("Black \033[1;32;40mwon!\033[0m")
                 break 
             
-            #After 100 half moves the game ends by draw
+            #After 100 half moves, the game ends by draw
             if movecount[1] == 1:
                 print("\033[1;30;40mDraw\033[0m  by 50 move rule")
                 break
             
+            #updating board for next game
             board = []
-
             for i in range(len(moves)):
                 board.append(list(moves[i].keys())[0])
 
+
+        file = open("book.txt","a")
+
+        #printing the pgn and writing it in "book.txt"
         for i in range(len(pgn)):
             if i%2==0:
+                file.write(f"{int((i+2)/2)}. {pgn[i]} ")
                 print(f"{int((i+2)/2)}. {pgn[i]}",end=" ")
             else:
+                file.write(f"{pgn[i]} ")
                 print(pgn[i],end=" ")
 
+        file.write(f"\n")
         print("\n\n")
+
+        
+        file.close()
         
 #Positions I used to test for bugs
 #board = self.fen2pos("r1B1k2r/ppPp1p1n/n3p1p1/6Q1/qPq5/N1B5/1P2PPPP/R3K2R w KQkq - 0 1")
@@ -852,7 +904,7 @@ class chess():
 
 start = time.time()
 for i in range(1):
-    board = chess.fen2pos(None,"8/8/8/8/8/r7/5k2/6RK - 0 1")
+    board = chess.fen2pos(None,"2k5/8/4p3/4Pp2/3N1Pp1/N5P1/4B1K1/8 w KQkq - 0 1")
     chess(board)
 
 print(f"\n\nProgram ran for {round((time.time()-start),3)} seconds\n")
