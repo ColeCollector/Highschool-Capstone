@@ -715,38 +715,47 @@ class chess():
                 else:
                     d3allmoves = removedupes(d3moves)
                     d3movecopy = copy.copy(d3moves)
-    
-                    for move in d3allmoves:
-                        d3moves = copy.copy(d3movecopy)
-                        d3moves = modify(d3moves,move)
+
+                    #if under 10 moves go to a depth of 4
+                    if movecount[0]>10:
+                        for move in d3allmoves:
+                            d3moves = copy.copy(d3movecopy)
+                            d3moves = modify(d3moves,move)
 
 
-                        #Perfect but slow code:
-                        layer0.append(evaluate(d3moves))
-
-
-                        #Algorithm +30% speed -30% Efficiency:
-                        """
-                        if layer1 == [] or move == d3allmoves[0]:
-                            #joe[0]+=1
+                            #Perfect but slow code:
                             layer0.append(evaluate(d3moves))
-                         
-                        else:   
-                            #print("\n",layer2)
-                            #print(layer1)
-                            #print(layer0)
-                            #time.sleep(1)
 
-                            #attempt 1 
+
+                            #Algorithm +30% speed -30% Efficiency:
+                            """
+                            if layer1 == [] or move == d3allmoves[0]:
+                                #joe[0]+=1
+                                layer0.append(evaluate(d3moves))
                             
-                            if layer2!=[]:
-                                if layer2[-1]!=[]:
+                            else:   
+                                #print("\n",layer2)
+                                #print(layer1)
+                                #print(layer0)
+                                #time.sleep(1)
 
-                                    if self.turn == "black":
-                                        if min(layer0)>max(layer2[-1]):
+                                #attempt 1 
+                                
+                                if layer2!=[]:
+                                    if layer2[-1]!=[]:
+
+                                        if self.turn == "black":
+                                            if min(layer0)>max(layer2[-1]):
+                                                break
+                                        else:
+                                            if max(layer0)<min(layer2[-1]):
+                                                break
+
+                                    elif self.turn == "black":
+                                        if min(layer0)>max(layer1):
                                             break
                                     else:
-                                        if max(layer0)<min(layer2[-1]):
+                                        if max(layer0)<min(layer1):
                                             break
 
                                 elif self.turn == "black":
@@ -754,20 +763,15 @@ class chess():
                                         break
                                 else:
                                     if max(layer0)<min(layer1):
-                                        break
-
-                            elif self.turn == "black":
-                                if min(layer0)>max(layer1):
-                                    break
-                            else:
-                                if max(layer0)<min(layer1):
-                                    break      
-                        
-                            #joe[0]+=1
-                            layer0.append(evaluate(d3moves))
-                        """
-
-
+                                        break      
+                            
+                                #joe[0]+=1
+                                layer0.append(evaluate(d3moves))
+                            """
+                    
+                    #if over 10 moves go to a depth of 3
+                    else:
+                        layer0.append(evaluate(d3moves))
 
                             
                     if self.turn == "white":
@@ -822,7 +826,7 @@ class chess():
                             layer4[allmoves.index(i)-1] = rid1[0][0]
                             p = -1
                 actual.append(layer4[allmoves.index(i)+p])
-                #print(i,layer4[allmoves.index(i)+p])
+                print(i,layer4[allmoves.index(i)+p])
             layer4 = actual
 
 
@@ -875,7 +879,7 @@ class chess():
                 board.append(list(moves[i].keys())[0])
 
 
-        file = open("book.txt","a")
+        file = open("!book.txt","a")
 
         #printing the pgn and writing it in "book.txt"
         for i in range(len(pgn)):
