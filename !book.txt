@@ -7,3 +7,16 @@
 1. Bxg4 
 1. d3 
 1. Bxg4 
+1. Bxg4 
+1. Bxg4 
+1. Kb7 
+1. Nb3 Kd7 2. Nc2 
+1. Bxg4 Kb7 2. Bxf5 Ka7 3. Bxe6 Ka8 4. g4 Ka7 5. g5 Ka8 
+1. Kf3 Kd6 2. Kg4 Ke6 3. Kg5 Kf7 4. Kf5 Kg7 5. Ke5 Kf7 
+1. Kf3 
+1. Kf3 
+1. Nxe6 
+1. Kf3 
+1. Nxe6 
+1. Nxe6 
+1. Nxe6 

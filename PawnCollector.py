@@ -389,7 +389,14 @@ class chess():
     def __init__(self,board):
         movecount = [0,0]
         pgn = []
+
         self.turn = "white"
+        choice = input("Would you like to be black or white?")
+
+        while choice!="white" and choice!="black":
+            choice = input("Would you like to be black or white?")
+    
+
         #lastmove = None
 
         def findmoves(board):
@@ -474,11 +481,12 @@ class chess():
                     differ2 = abs(y-collumn)
 
                     if differ1>differ2:
-                        eheatmap[collumn][row] += 500-50*differ1
+                        eheatmap[collumn][row] += 30-differ1
 
                     else:
-                        eheatmap[collumn][row] += 500-50*differ2
+                        eheatmap[collumn][row] += 30-differ2
 
+ 
             return eheatmap
         
         def evaluate(moves):
@@ -603,152 +611,161 @@ class chess():
             else:
                 switch = False
 
-            layer0 = []
-            layer1 = []
-            layer2 = []
-            layer3 = []
-            layer4 = []
-            depth1 = []
-            depth2 = []
-            depth3 = []
-
-            rid1 = []
-            rid2 = []
-            rid3 = []
-
             moves = findmoves(board)
             allmoves = removedupes(moves)
             movecopy = copy.copy(moves)
-            
 
-            #print(round((time.time()-start),3))
-            for move in allmoves:
-                moves = copy.copy(movecopy)
-                moves = modify(moves,move)
+            if self.turn != choice:
+ 
 
-                
-                x = gameloop(moves)
-                if x == None:
-                    depth1.append(depth(moves))
-                else:
-                    rid1.append([x*4, allmoves.index(move)])
+                layer0 = []
+                layer1 = []
+                layer2 = []
+                layer3 = []
+                layer4 = []
+                depth1 = []
+                depth2 = []
+                depth3 = []
 
+                rid1 = []
+                rid2 = []
+                rid3 = []
 
-            #switching colors
-            if self.turn == "white":
-                self.turn = "black"
-                switch = False
-            else:
-                self.turn = "white"
-                switch = True
+                #print(round((time.time()-start),3))
+                for move in allmoves:
+                    moves = copy.copy(movecopy)
+                    moves = modify(moves,move)
 
-            #print(round((time.time()-start),3))
-            for d1moves in depth1:
-                
-                d1allmoves = removedupes(d1moves)
-                d1movecopy = copy.copy(d1moves)
-
-                for move in d1allmoves:
-
-                    #print(allmoves[depth1.index(d1movecopy)],move)
-
-                    d1moves = copy.copy(d1movecopy)
-                    d1moves = modify(d1moves,move)
-
-                    x = gameloop(d1moves)
+                    
+                    x = gameloop(moves)
                     if x == None:
-                        depth2.append(depth(d1moves))
+                        depth1.append(depth(moves))
                     else:
+                        rid1.append([x*4, allmoves.index(move)])
+
+
+                #switching colors
+                if self.turn == "white":
+                    self.turn = "black"
+                    switch = False
+                else:
+                    self.turn = "white"
+                    switch = True
+
+                #print(round((time.time()-start),3))
+                for d1moves in depth1:
+                    
+                    d1allmoves = removedupes(d1moves)
+                    d1movecopy = copy.copy(d1moves)
+
+                    for move in d1allmoves:
+
                         #print(allmoves[depth1.index(d1movecopy)],move)
-                        rid2.append([x*3,depth1.index(d1movecopy)])
-                
-                depth2.append(None)
 
-            #switching colors
-            if self.turn == "white":
-                self.turn = "black"
-                switch = False
-            else:
-                self.turn = "white"
-                switch = True
+                        d1moves = copy.copy(d1movecopy)
+                        d1moves = modify(d1moves,move)
 
-            #print(round((time.time()-start),3))
-            for d2moves in depth2:
-                if d2moves == None:
-                    depth3.append(None)
-                else:
-                    d2allmoves = removedupes(d2moves)
-                    d2movecopy = copy.copy(d2moves)
-                    for move in d2allmoves:
-                        d2moves = copy.copy(d2movecopy)
-                        d2moves = modify(d2moves,move)
-                        x = gameloop(d2moves)
+                        x = gameloop(d1moves)
                         if x == None:
-                            depth3.append(depth(d2moves))
+                            depth2.append(depth(d1moves))
                         else:
-                            #print(d1allmoves[depth2.index(d2movecopy)],move)
-                            rid3.append([x*2,depth2.index(d2movecopy)])
-                        #print(depth2.index(d2movecopy))
+                            #print(allmoves[depth1.index(d1movecopy)],move)
+                            rid2.append([x*3,depth1.index(d1movecopy)])
+                    
+                    depth2.append(None)
 
-                    depth3.append(None)
-
-
-            #switching colors
-            if self.turn == "white":
-                self.turn = "black"
-                switch = False
-
-            else:
-                self.turn = "white"
-                switch = True
-
-            
-            track = 0
-            #joe = [0,0]
-            #print(round((time.time()-start),3))
-            #print(len(depth3))
-            for d3moves in depth3:
-                if d3moves == None:
-                    layer2.append(layer1)
-                    layer1 = []
-                    track+=1
+                #switching colors
+                if self.turn == "white":
+                    self.turn = "black"
+                    switch = False
                 else:
-                    d3allmoves = removedupes(d3moves)
-                    d3movecopy = copy.copy(d3moves)
+                    self.turn = "white"
+                    switch = True
 
-                    #if under 10 moves go to a depth of 4
-                    if movecount[0]>10:
-                        for move in d3allmoves:
-                            d3moves = copy.copy(d3movecopy)
-                            d3moves = modify(d3moves,move)
+                #print(round((time.time()-start),3))
+                for d2moves in depth2:
+                    if d2moves == None:
+                        depth3.append(None)
+                    else:
+                        d2allmoves = removedupes(d2moves)
+                        d2movecopy = copy.copy(d2moves)
+                        for move in d2allmoves:
+                            d2moves = copy.copy(d2movecopy)
+                            d2moves = modify(d2moves,move)
+                            x = gameloop(d2moves)
+                            if x == None:
+                                depth3.append(depth(d2moves))
+                            else:
+                                #print(d1allmoves[depth2.index(d2movecopy)],move)
+                                rid3.append([x*2,depth2.index(d2movecopy)])
+                            #print(depth2.index(d2movecopy))
+
+                        depth3.append(None)
 
 
-                            #Perfect but slow code:
-                            layer0.append(evaluate(d3moves))
+                #switching colors
+                if self.turn == "white":
+                    self.turn = "black"
+                    switch = False
+
+                else:
+                    self.turn = "white"
+                    switch = True
+
+                
+                track = 0
+                #joe = [0,0]
+                #print(round((time.time()-start),3))
+                #print(len(depth3))
+                for d3moves in depth3:
+                    if d3moves == None:
+                        layer2.append(layer1)
+                        layer1 = []
+                        track+=1
+                    else:
+                        d3allmoves = removedupes(d3moves)
+                        d3movecopy = copy.copy(d3moves)
+
+                        #if under 10 moves go to a depth of 4
+                        if movecount[0]<10:
+                            for move in d3allmoves:
+                                d3moves = copy.copy(d3movecopy)
+                                d3moves = modify(d3moves,move)
 
 
-                            #Algorithm +30% speed -30% Efficiency:
-                            """
-                            if layer1 == [] or move == d3allmoves[0]:
-                                #joe[0]+=1
+                                #Perfect but slow code:
                                 layer0.append(evaluate(d3moves))
-                            
-                            else:   
-                                #print("\n",layer2)
-                                #print(layer1)
-                                #print(layer0)
-                                #time.sleep(1)
 
-                                #attempt 1 
+
+                                #Algorithm +30% speed -30% Accuracy:
+                                """
+                                if layer1 == [] or move == d3allmoves[0]:
+                                    #joe[0]+=1
+                                    layer0.append(evaluate(d3moves))
                                 
-                                if layer2!=[]:
-                                    if layer2[-1]!=[]:
+                                else:   
+                                    #print("\n",layer2)
+                                    #print(layer1)
+                                    #print(layer0)
+                                    #time.sleep(1)
 
-                                        if self.turn == "black":
-                                            if min(layer0)>max(layer2[-1]):
+                                    #attempt 1 
+                                    
+                                    if layer2!=[]:
+                                        if layer2[-1]!=[]:
+
+                                            if self.turn == "black":
+                                                if min(layer0)>max(layer2[-1]):
+                                                    break
+                                            else:
+                                                if max(layer0)<min(layer2[-1]):
+                                                    break
+
+                                        elif self.turn == "black":
+                                            if min(layer0)>max(layer1):
                                                 break
                                         else:
-                                            if max(layer0)<min(layer2[-1]):
+                                            if max(layer0)<min(layer1):
                                                 break
 
                                     elif self.turn == "black":
@@ -756,90 +773,96 @@ class chess():
                                             break
                                     else:
                                         if max(layer0)<min(layer1):
-                                            break
-
-                                elif self.turn == "black":
-                                    if min(layer0)>max(layer1):
-                                        break
-                                else:
-                                    if max(layer0)<min(layer1):
-                                        break      
-                            
-                                #joe[0]+=1
-                                layer0.append(evaluate(d3moves))
-                            """
-                    
-                    #if over 10 moves go to a depth of 3
-                    else:
-                        layer0.append(evaluate(d3moves))
-
-                            
-                    if self.turn == "white":
-                        layer1.append(max(layer0))
+                                            break      
+                                
+                                    #joe[0]+=1
+                                    layer0.append(evaluate(d3moves))
+                                """
                         
-                    else:
-                        layer1.append(min(layer0))
-                    
-
-                    #print(track)
-                    for i in rid3:
-                        if i[1] == track:
-                            #print(move,i[0])
-                            layer1.append(i[0])
-
-                    layer0 = []
-
-            #print(joe)
-                    
-
-
-            track = 0
-            for i in layer2:
-                if i!= []:
-                    if self.turn == "white":
-                        layer3.append(min(i))
-                    else:
-                        layer3.append(max(i))
-
-                    for i in rid2:
-                        if i[1] == track:
-                            layer3.append(i[0])
-                else:
-                    if self.turn == "white":
-                        layer4.append(max(layer3))
-                    else:
-                        layer4.append(min(layer3))
-                    layer3 = []
-                    track+=1
-
-
-            #inserting the checkmate evaluation between the other moves
-            p = 0
-            actual = []
-
-            for i in allmoves:
-                if len(rid1)>0:
-                    if allmoves.index(i) == rid1[0][1]:
-                        if allmoves.index(i) == len(layer4):
-                            layer4.append(rid1[0][0])
+                        #if over 10 moves go to a depth of 3
                         else:
-                            layer4[allmoves.index(i)-1] = rid1[0][0]
-                            p = -1
-                actual.append(layer4[allmoves.index(i)+p])
-                print(i,layer4[allmoves.index(i)+p])
-            layer4 = actual
+                            layer0.append(evaluate(d3moves))
+
+                                
+                        if self.turn == "white":
+                            layer1.append(max(layer0))
+                            
+                        else:
+                            layer1.append(min(layer0))
+                        
+
+                        #print(track)
+                        for i in rid3:
+                            if i[1] == track:
+                                #print(move,i[0])
+                                layer1.append(i[0])
+
+                        layer0 = []
+
+                #print(joe)
+                        
 
 
-            if self.turn == "white":
-                pgn.append(allmoves[layer4.index(min(layer4))])
-                switch = False
-                move = allmoves[layer4.index(min(layer4))]
-                
+                track = 0
+                for i in layer2:
+                    if i!= []:
+                        if self.turn == "white":
+                            layer3.append(min(i))
+                        else:
+                            layer3.append(max(i))
+
+                        for i in rid2:
+                            if i[1] == track:
+                                layer3.append(i[0])
+                    else:
+                        if self.turn == "white":
+                            layer4.append(max(layer3))
+                        else:
+                            layer4.append(min(layer3))
+                        layer3 = []
+                        track+=1
+
+
+                #inserting the checkmate evaluation between the other moves
+                p = 0
+                actual = []
+
+                for i in allmoves:
+                    if len(rid1)>0:
+                        if allmoves.index(i) == rid1[0][1]:
+                            if allmoves.index(i) == len(layer4):
+                                layer4.append(rid1[0][0])
+                            else:
+                                layer4[allmoves.index(i)-1] = rid1[0][0]
+                                p = -1
+                    actual.append(layer4[allmoves.index(i)+p])
+                    #print(i,layer4[allmoves.index(i)+p])
+                layer4 = actual
+
+
+                if self.turn == "white":
+                    pgn.append(allmoves[layer4.index(min(layer4))])
+                    switch = False
+                    move = allmoves[layer4.index(min(layer4))]
+                    
+                else:
+                    pgn.append(allmoves[layer4.index(max(layer4))])
+                    switch = True
+                    move = allmoves[layer4.index(max(layer4))]
+                print(f"I played {move}")
             else:
-                pgn.append(allmoves[layer4.index(max(layer4))])
-                switch = True
-                move = allmoves[layer4.index(max(layer4))]
-
+                if self.turn == "white":
+                    self.turn = "black"
+                else:
+                    self.turn = "white"
+                
+                print("Poissible moves:",allmoves)
+                move = input("\nYour move:")
+                while move not in allmoves:
+                    print("That's not a valid move")
+                    move = input("Your move:")
+                pgn.append(move)
+                    
 
             moves = copy.copy(movecopy)
             moves = modify(moves,move)
@@ -869,7 +892,7 @@ class chess():
                 break 
             
             #After 100 half moves, the game ends by draw
-            if movecount[1] == 1:
+            if movecount[1] == 10:
                 print("\033[1;30;40mDraw\033[0m  by 50 move rule")
                 break
             
