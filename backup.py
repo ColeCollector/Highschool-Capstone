@@ -386,11 +386,10 @@ class chess():
         available.sort()
         return {square:available}
 
-    def __init__(self,board):
-        movecount = [0,0]
+    def __init__(self,board,movecount):
         pgn = []
 
-        self.turn = "white"
+        self.turn = "black"
 
         #lastmove = None
 
@@ -719,7 +718,7 @@ class chess():
                 d3movecopy = copy.copy(d3moves)
 
                 #if under 10 moves go to a depth of 4
-                if movecount[0]<10:
+                if movecount>30:
                     for move in d3allmoves:
                         d3moves = copy.copy(d3movecopy)
                         d3moves = modify(d3moves,move)
@@ -848,18 +847,8 @@ class chess():
         moves = modify(moves,move)
 
 
-        movecount[1] +=1
-        movecount[0] +=1
-
-        king = [False,False]
 
 
-        for i in moves:
-            if list(i.keys())[0][0] == "K":
-                king[0] = True
-
-            elif list(i.keys())[0][0] == "k":
-                king[1] = True
 
 
         """
@@ -894,7 +883,7 @@ class chess():
         self.move = move
         self.moves = moves
         self.allmoves = allmoves
-
+        self.switch = switch
 
         """
         file = open("!book.txt","a")

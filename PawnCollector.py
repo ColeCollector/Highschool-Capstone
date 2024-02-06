@@ -614,7 +614,8 @@ class chess():
             moves = findmoves(board)
             allmoves = removedupes(moves)
             movecopy = copy.copy(moves)
-
+            print(moves)
+            print(board)
             if self.turn != choice:
  
 
@@ -931,7 +932,7 @@ class chess():
 
 start = time.time()
 for i in range(1):
-    board = chess.fen2pos(None,"2k5/8/4p3/4Pp2/3N1Pp1/N5P1/4B1K1/8 w KQkq - 0 1")
+    board = chess.fen2pos(None,"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
     chess(board)
 
 print(f"\n\nProgram ran for {round((time.time()-start),3)} seconds\n")

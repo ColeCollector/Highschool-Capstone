@@ -158,7 +158,7 @@ while running:
         if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
             holding = False
             if bonded!= None:
-
+                print(thing2,movepos,bonded,pos)
                 for i in movepos:
                     for j in list_duplicates_of(movepos,i):
                         if thing2[j] in list(moves[bonded].values())[0]:
