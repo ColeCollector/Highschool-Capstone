@@ -484,27 +484,23 @@ class chess():
             return eheatmap
         
         def evaluate(moves):
-
             evaluation = 0
-            endgame = 0
-            eheatmap = [
-            [0,0,0,0,0,0,0,0],
-            [0,0,0,0,0,0,0,0],
-            [0,0,0,0,0,0,0,0],
-            [0,0,0,0,0,0,0,0],
-            [0,0,0,0,0,0,0,0],
-            [0,0,0,0,0,0,0,0],
-            [0,0,0,0,0,0,0,0],
-            [0,0,0,0,0,0,0,0]]
+            if self.endgame<=4:
+                print("Endgame\n\n")
+                eheatmap = [
+                [0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0]]
 
-            for i in moves:
-                if list(i.keys())[0][0]!="P" and list(i.keys())[0][0]!="p":
-                    endgame+=1
+                for i in moves:
+                    if list(i.keys())[0][0]=="P" or list(i.keys())[0][0]=="p":
+                        eheatmap = end(list(i.keys())[0],eheatmap)
                 
-                else:
-                    eheatmap = end(list(i.keys())[0],eheatmap)
-            
-            if endgame<=4:
                 heatmap.map_points[5] = eheatmap
             
             else:
@@ -524,7 +520,7 @@ class chess():
                 else:
                     evaluation -= heatm[1]*10
 
-                    if heatmap.map_points[5] == eheatmap:
+                    if self.endgame<=4:
                         evaluation -= heat[8-int(temp[-1])][int(self.xaxis.index(temp[-2]))]
                     else:
                         evaluation -= heat[int(temp[-1])-1][7-int(self.xaxis.index(temp[-2]))]  
@@ -608,6 +604,10 @@ class chess():
         allmoves = removedupes(moves)
         movecopy = copy.copy(moves)
 
+        self.endgame = 0
+        for i in moves:
+            if list(i.keys())[0][0]!="P" and list(i.keys())[0][0]!="p":
+                self.endgame+=1
 
         layer0 = []
         layer1 = []
@@ -717,7 +717,7 @@ class chess():
                 d3allmoves = removedupes(d3moves)
                 d3movecopy = copy.copy(d3moves)
 
-                #if under 10 moves go to a depth of 4
+                #if under 30 moves go to a depth of 4
                 if movecount>30:
                     for move in d3allmoves:
                         d3moves = copy.copy(d3movecopy)
@@ -727,50 +727,8 @@ class chess():
                         #Perfect but slow code:
                         layer0.append(evaluate(d3moves))
 
-
-                        #Algorithm +30% speed -30% Accuracy:
-                        """
-                        if layer1 == [] or move == d3allmoves[0]:
-                            #joe[0]+=1
-                            layer0.append(evaluate(d3moves))
-                        
-                        else:   
-                            #print("\n",layer2)
-                            #print(layer1)
-                            #print(layer0)
-                            #time.sleep(1)
-
-                            #attempt 1 
-                            
-                            if layer2!=[]:
-                                if layer2[-1]!=[]:
-
-                                    if self.turn == "black":
-                                        if min(layer0)>max(layer2[-1]):
-                                            break
-                                    else:
-                                        if max(layer0)<min(layer2[-1]):
-                                            break
-
-                                elif self.turn == "black":
-                                    if min(layer0)>max(layer1):
-                                        break
-                                else:
-                                    if max(layer0)<min(layer1):
-                                        break
-
-                            elif self.turn == "black":
-                                if min(layer0)>max(layer1):
-                                    break
-                            else:
-                                if max(layer0)<min(layer1):
-                                    break      
-                        
-                            #joe[0]+=1
-                            layer0.append(evaluate(d3moves))
-                        """
                 
-                #if over 10 moves go to a depth of 3
+                #if over 30 moves go to a depth of 3
                 else:
                     layer0.append(evaluate(d3moves))
 

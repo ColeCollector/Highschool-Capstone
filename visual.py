@@ -12,6 +12,7 @@ holding = False
 bonded = None
 turn = "white"
 switch = True
+compmove = None
 
 #program needs to be given board and moves
 board = ['ra8', 'nb8', 'bc8', 'qd8', 'ke8', 'bf8', 'ng8', 'rh8', 'pa7', 'pb7', 'pc7', 'pd7', 'pe7', 'pf7', 'pg7', 'ph7', 'Pa2', 'Pb2', 'Pc2', 'Pd2', 'Pe2', 'Pf2', 'Pg2', 'Ph2', 'Ra1', 'Nb1', 'Bc1', 'Qd1', 'Ke1', 
@@ -114,7 +115,32 @@ def modify(moves,move):
         board.append(list(moves[i].keys())[0])
     return [moves,board,take]
 
+def removedupes(moves):
 
+    allmoves = []
+    dupes = []
+
+    for j in moves:
+        if list(j.keys())[0][0].isupper() == switch:
+            for k in (list(j.values())[0]):
+                if k in allmoves:
+                    dupes.append(k)
+                else:
+                    allmoves.append(k)
+
+    
+    if dupes !=[]:
+        allmoves = []
+        for j in moves:
+            if list(j.keys())[0][0].isupper() == switch:
+                for k in (list(j.values())[0]):
+                    if k in dupes:
+                        list(j.values())[0][list(j.values())[0].index(k)] = f"{k[:1]}{list(j.keys())[0][1]}{k[1:]}"
+                        allmoves.append(f"{k[:1]}{list(j.keys())[0][1]}{k[1:]}")
+                    else:
+                        allmoves.append(k)
+    
+    return allmoves
 
 
 
@@ -144,18 +170,26 @@ while running:
                 for i in movepos:
                     for j in list_duplicates_of(movepos,i):
                         if thing2[j] in list(moves[bonded].values())[0]:
-                            #if you are clicking on a piece
+                            #if you were clicking on a piece
                             if (pos[bonded].x > i[0]-50 and pos[bonded].x < i[0]+50) and (pos[bonded].y > i[1]-50 and pos[bonded].y <i[1]+50):
-                                playsound.playsound("move.mp3",block=False)
+                                if "x" not in thing2[j]:
+                                    playsound.playsound("move.mp3",block=False)
+                                else:
+                                    playsound.playsound("takes.mp3",block=False)
+
                                 pos[bonded].x = i[0]
                                 pos[bonded].y = i[1]
-                                
+
                                 #print("Your move:",thing2[j])
                                 
+
+                                allmoves = removedupes(moves)
                                 modified = modify(moves,thing2[j])
-                                
                                 moves = modified[0]
                                 board = modified[1]
+                                
+
+
 
                                 king = [False,False]
 
@@ -219,12 +253,7 @@ while running:
                     
 
                     moves = analysis.moves
-                    allmoves = []
-                    for i in moves:
-                        vals = list(i.values())[0]
-                        if vals!=[]:
-                            for j in vals:
-                                allmoves.append(j)
+                    allmoves = removedupes(moves)
                     
 
                     pieces = []
@@ -257,35 +286,25 @@ while running:
                                 elif xaxis.index(move[-2]) == i and 8-int(move[-1]) == j:
                                     movepos.append([37.5+340+75*i, 37.5+60+75*j])
                                     thing2.append(move)
-                    playsound.playsound("move.mp3",block=False)
+                    
+                    if "x" not in compmove:
+                        playsound.playsound("move.mp3",block=False)
+                    else:
+                        playsound.playsound("takes.mp3",block=False)
+
 
 
                                     
                 bonded = None
                 
-    
-               
 
-
-
-    #pe6 [677.5, 247.5]
-    #Pe5 [677.5, 322.5]
-    #pf5 [752.5, 322.5]
-    #Nd4 [602.5, 397.5]
-    #Pf4 [752.5, 397.5]
-    #pg4 [827.5, 397.5]
-    #Na3 [377.5, 472.5]
-    #Pg3 [827.5, 472.5]
-    #Be2 [677.5, 547.5]
-    #Kf2 [752.5, 547.5]
-    #kd7 [602.5, 172.5]
-    
     # fill the screen with a color to wipe away anything from last frame
     screen.fill("white")
     
     for j in range(0,8):
         for i in range(0,8):
-
+            
+            #alternating white and purple
             if i%2 == 0:
                 if j%2==0:
                     color = "white"
@@ -296,52 +315,62 @@ while running:
                     color = "#D684FF"
                 else:
                     color = "white"
-             
-
-            for move in allmoves:
-                if "=" in move:
-                    if xaxis.index(move[-4]) == i and 8-int(move[-3]) == j:
-                        if color == "white":
-                            color = "pink"
-                        elif color == "#D684FF":
-                            color = "#FF7070"
-
-                elif xaxis.index(move[-2]) == i and 8-int(move[-1]) == j:
-                    if color == "white":
-                        color = "pink"
-                    elif color == "#D684FF":
-                        color = "#FF7070"
+            
+            #showing which piece moved where
+            if compmove !=None:
+                if i ==xaxis.index(compmove[-2]) and j==8-int(compmove[-1]):
+                    color = "light green"
 
             pygame.draw.rect(screen,color,pygame.Rect(340+75*i, 60+75*j, 75, 75))
+            
+            if bonded!=None:
+                for move in list(moves[bonded].values())[0]:
+                    if "=" in move:
+                        if xaxis.index(move[-4]) == i and 8-int(move[-3]) == j:
+
+                            if color == "white":
+                                color = "#EFD1FF"
+                            elif color == "#D684FF":
+                                color = "#945CB2"
+
+                    elif xaxis.index(move[-2]) == i and 8-int(move[-1]) == j:
+
+                        if color == "white":
+                            color = "#EBCCFF"
+                        elif color == "#D684FF":
+                            color = "#945CB2"
+
+                        pygame.draw.circle(screen, color, [377.5+75*i, 97.5+75*j], 15)
+            
 
 
-            #pieces
-            for i in range(0,len(pieces)):
-                pieces[i].convert()
-                pieces1 = pieces[i].get_rect()
-                pieces1.center = (pos[i].x,pos[i].y)
-                screen.blit(pieces[i],pieces1)
+    #pieces
+    for i in range(0,len(pieces)):
+        pieces[i].convert()
+        pieces1 = pieces[i].get_rect()
+        pieces1.center = (pos[i].x,pos[i].y)
+        screen.blit(pieces[i],pieces1)
 
 
-            mouse = pygame.mouse.get_pos()
+    mouse = pygame.mouse.get_pos()
 
 
-            if holding == True:
-                if bonded == None:
-                    for i in pos:
-                        if board[pos.index(i)][0].isupper() == switch:
-                            if mouse[0] > i.x-50 and mouse[0] < i.x+50:
-                                
-                                if mouse[1] > i.y-50 and mouse[1] < i.y+50:
-                                    #print(board[pos.index(i)])
-                                    i.x = mouse[0]
-                                    i.y = mouse[1]
-                                    bonded = pos.index(i)
-                                    break
- 
-                else:
-                    pos[bonded].x = mouse[0]
-                    pos[bonded].y = mouse[1]
+    if holding == True:
+        if bonded == None:
+            for i in pos:
+                if board[pos.index(i)][0].isupper() == switch:
+                    if mouse[0] > i.x-50 and mouse[0] < i.x+50:
+                        
+                        if mouse[1] > i.y-50 and mouse[1] < i.y+50:
+                            #print(board[pos.index(i)])
+                            i.x = mouse[0]
+                            i.y = mouse[1]
+                            bonded = pos.index(i)
+                            break
+
+        else:
+            pos[bonded].x = mouse[0]
+            pos[bonded].y = mouse[1]
 
 
 
