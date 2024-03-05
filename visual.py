@@ -13,7 +13,7 @@ bonded = None
 turn = "white"
 switch = True
 compmove = None
-
+king = [True,True]
 #program needs to be given board and moves
 board = ['ra8', 'nb8', 'bc8', 'qd8', 'ke8', 'bf8', 'ng8', 'rh8', 'pa7', 'pb7', 'pc7', 'pd7', 'pe7', 'pf7', 'pg7', 'ph7', 'Pa2', 'Pb2', 'Pc2', 'Pd2', 'Pe2', 'Pf2', 'Pg2', 'Ph2', 'Ra1', 'Nb1', 'Bc1', 'Qd1', 'Ke1', 
 'Bf1', 'Ng1', 'Rh1']
@@ -37,6 +37,7 @@ ogpos = []
 movepos = []
 things = []
 thing2 = []
+pgn = []
 poop = False
 movecount = 0
 """for piece in board:
@@ -52,7 +53,7 @@ for move in allmoves:
 
 
 
-
+#intially render the board
 for j in range(0,8):
     for i in range(0,8):
         for piece in board:
@@ -142,7 +143,24 @@ def removedupes(moves):
     
     return allmoves
 
+def savegame(pgn):
+    if pgn!=[]:
+        file = open("!book.txt","a")
 
+        #printing the pgn and writing it in "book.txt"
+        for i in range(len(pgn)):
+            if i%2==0:
+                file.write(f"{int((i+2)/2)}. {pgn[i]} ")
+                print(f"{int((i+2)/2)}. {pgn[i]}",end=" ")
+            else:
+                file.write(f"{pgn[i]} ")
+                print(pgn[i],end=" ")
+
+        file.write(f"\n")
+        print("\n\n")
+
+        
+        file.close()
 
 while running:
     
@@ -150,10 +168,9 @@ while running:
     # pygame.QUIT event means the user clicked X to close your window
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
+            savegame(pgn)
             running = False
 
-        #If you click middle mouse button
-        #if event.type == pygame.MOUSEBUTTONDOWN and event.button == 2:
 
 
 
@@ -181,16 +198,38 @@ while running:
                                 pos[bonded].y = i[1]
 
                                 #print("Your move:",thing2[j])
+                                pgn.append(thing2[j])
                                 
-
                                 allmoves = removedupes(moves)
                                 modified = modify(moves,thing2[j])
                                 moves = modified[0]
                                 board = modified[1]
                                 
+                                screen.fill("white")
 
+                                for j in range(0,8):
+                                    for i in range(0,8):
+                                        
+                                        #alternating white and purple
+                                        if i%2 == 0:
+                                            if j%2==0:
+                                                color = "white"
+                                            else:
+                                                color = "#D684FF"
+                                        else:
+                                            if j%2==0:
+                                                color = "#D684FF"
+                                            else:
+                                                color = "white"
+                                        pygame.draw.rect(screen,color,pygame.Rect(340+75*i, 60+75*j, 75, 75))
 
-
+                                for i in range(0,len(pieces)):
+                                    pieces[i].convert()
+                                    pieces1 = pieces[i].get_rect()
+                                    pieces1.center = (pos[i].x,pos[i].y)
+                                    screen.blit(pieces[i],pieces1)
+                                
+                                pygame.display.flip()
                                 king = [False,False]
 
                                 for i in moves:
@@ -199,22 +238,9 @@ while running:
 
                                     elif list(i.keys())[0][0] == "k":
                                         king[1] = True
-
-                                #if no white king
-                                if king[0] == False:
-                                    font = pygame.font.Font('freesansbold.ttf', 50)
-                                    text = font.render("You Lost", True, 'red')
-                                    textRect = text.get_rect()
-                                    textRect.center = (1280 // 2, 720 // 2)
-                                    screen.blit(text, textRect)
-
-                                    pygame.display.flip()
-                                    playsound.playsound("mate.mp3")
-                                    time.sleep(1)
-                                    exit()
                                 
                                 #if no black king
-                                elif king[1] == False:
+                                if king[1] == False:
                                     font = pygame.font.Font('freesansbold.ttf', 50)
                                     text = font.render("You Won", True, 'purple')
                                     textRect = text.get_rect()
@@ -224,6 +250,7 @@ while running:
                                     pygame.display.flip()
                                     playsound.playsound("mate.mp3")
                                     time.sleep(1)
+                                    savegame(pgn)
                                     exit()
 
                                 poop = True
@@ -243,6 +270,10 @@ while running:
                     analysis = backup.chess(board,movecount)
                     board = analysis.board
                     compmove = analysis.move
+                    pgn.append(compmove)
+                    original = analysis.original
+                    original = list(original.keys())[0]
+
                     
                     
                     for i in pos:
@@ -292,6 +323,15 @@ while running:
                     else:
                         playsound.playsound("takes.mp3",block=False)
 
+                    king = [False,False]
+
+                    for i in moves:
+                        if list(i.keys())[0][0] == "K":
+                            king[0] = True
+
+                        elif list(i.keys())[0][0] == "k":
+                            king[1] = True
+
 
 
                                     
@@ -317,9 +357,25 @@ while running:
                     color = "white"
             
             #showing which piece moved where
-            if compmove !=None:
-                if i ==xaxis.index(compmove[-2]) and j==8-int(compmove[-1]):
-                    color = "light green"
+            if compmove !=None and original!= None:
+                if "=" in compmove:
+                    if i == xaxis.index(compmove[-4]) and j==8-int(compmove[-3]):
+                        if color == "white":
+                            color = "#FFFFC6"
+                        else:
+                            color = "#FFE884"
+                else:
+                    if i == xaxis.index(compmove[-2]) and j==8-int(compmove[-1]):
+                        if color == "white":
+                            color = "#FFFFC6"
+                        else:
+                            color = "#FFE884"
+
+                if i == xaxis.index(original[-2]) and j==8-int(original[-1]):
+                    if color == "white":
+                        color = "#FFFFC6"
+                    else:
+                        color = "#FFE884"
 
             pygame.draw.rect(screen,color,pygame.Rect(340+75*i, 60+75*j, 75, 75))
             
@@ -329,9 +385,11 @@ while running:
                         if xaxis.index(move[-4]) == i and 8-int(move[-3]) == j:
 
                             if color == "white":
-                                color = "#EFD1FF"
+                                color = "#EBCCFF"
                             elif color == "#D684FF":
                                 color = "#945CB2"
+
+                        pygame.draw.circle(screen, color, [377.5+75*i, 97.5+75*j], 15)
 
                     elif xaxis.index(move[-2]) == i and 8-int(move[-1]) == j:
 
@@ -372,6 +430,20 @@ while running:
             pos[bonded].x = mouse[0]
             pos[bonded].y = mouse[1]
 
+    #if no white king
+    if king[0] == False:
+        font = pygame.font.Font('freesansbold.ttf', 50)
+        text = font.render("You Lost", True, 'red')
+        textRect = text.get_rect()
+        textRect.center = (1280 // 2, 720 // 2)
+        screen.blit(text, textRect)
+
+        pygame.display.flip()
+        playsound.playsound("mate.mp3")
+        time.sleep(1)
+        savegame(pgn)
+        exit()
+    
 
 
     #pieces = Image.open("pieces.png").crop((0,0,30,30))
@@ -388,4 +460,3 @@ while running:
 pygame.quit()
 exit()
     
-

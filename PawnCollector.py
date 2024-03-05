@@ -614,8 +614,7 @@ class chess():
             moves = findmoves(board)
             allmoves = removedupes(moves)
             movecopy = copy.copy(moves)
-            print(moves)
-            print(board)
+
             if self.turn != choice:
  
 

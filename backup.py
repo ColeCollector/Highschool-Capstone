@@ -542,7 +542,7 @@ class chess():
                         else:
                             move = list(i.keys())[0][0]+move[-2]+move[-1]
                         
-                        original = i
+                        self.original = i
                 
 
                 if list(i.keys())[0][1:] == move[-2]+move[-1]:
@@ -551,7 +551,7 @@ class chess():
             if take != None:
                 moves.remove(take)
 
-            moves.remove(original)
+            moves.remove(self.original)
             moves.append({move:""})
             return moves
 
@@ -707,28 +707,26 @@ class chess():
         track = 0
         #joe = [0,0]
         #print(round((time.time()-start),3))
-        #print(len(depth3))
+        #print(len(depth3),movecount)
         for d3moves in depth3:
             if d3moves == None:
                 layer2.append(layer1)
                 layer1 = []
                 track+=1
             else:
-                d3allmoves = removedupes(d3moves)
-                d3movecopy = copy.copy(d3moves)
-
-                #if under 30 moves go to a depth of 4
+                #if over 30 moves go to a depth of 4
                 if movecount>30:
+                    d3allmoves = removedupes(d3moves)
+                    d3movecopy = copy.copy(d3moves)
                     for move in d3allmoves:
                         d3moves = copy.copy(d3movecopy)
                         d3moves = modify(d3moves,move)
-
 
                         #Perfect but slow code:
                         layer0.append(evaluate(d3moves))
 
                 
-                #if over 30 moves go to a depth of 3
+                #if under 30 moves go to a depth of 3
                 else:
                     layer0.append(evaluate(d3moves))
 
@@ -807,24 +805,6 @@ class chess():
 
 
 
-
-
-        """
-        #If no black king, white wins
-        if king[1] == False:
-            print("White \033[1;32;40mwon!\033[0m")
-            break
-        
-        #if no white king, black wins
-        elif king[0] == False:
-            print("Black \033[1;32;40mwon!\033[0m")
-            break 
-        
-        #After 100 half moves, the game ends by draw
-        if movecount[1] == 1:
-            #print("\033[1;30;40mDraw\033[0m  by 50 move rule")
-            break
-        """
         
         #updating board for next game
         board = []
@@ -843,47 +823,7 @@ class chess():
         self.allmoves = allmoves
         self.switch = switch
 
-        """
-        file = open("!book.txt","a")
-
-        #printing the pgn and writing it in "book.txt"
-        for i in range(len(pgn)):
-            if i%2==0:
-                file.write(f"{int((i+2)/2)}. {pgn[i]} ")
-                #print(f"{int((i+2)/2)}. {pgn[i]}",end=" ")
-            else:
-                file.write(f"{pgn[i]} ")
-                #print(pgn[i],end=" ")
-
-        file.write(f"\n")
-        #print("\n\n")
-
-        
-        file.close()
-        """
 
 
 
-# Positions I used to test for bugs :
-"""
-board = self.fen2pos("r1B1k2r/ppPp1p1n/n3p1p1/6Q1/qPq5/N1B5/1P2PPPP/R3K2R w KQkq - 0 1")
-board = self.fen2pos("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
-board = self.fen2pos("k7/8/8/8/3B4/8/8/7K w - - 0 1")
-board = self.fen2pos("r3k2r/pQpp1p1n/n1P1p1pN/8/qP3B2/N1B1b3/1PK1PPPP/R6R w HAkq - 0 1")
-board = self.fen2pos("2q5/4q3/8/1p2R1q1/q1R5/8/2q1p3/k6K w - - 0 1")
-board = self.fen2pos ("rnbqkbnr/pppp1ppp/8/8/4pP2/6PP/PPPPP3/RNBQKBNR b KQkq f3 0 3")
-board = self.fen2pos("7k/5Q2/4q3/4K3/8/8/8/8 w - - 0 1")
-"""
 
-
-
-def main():
-    start = time.time()
-    board = chess.fen2pos(None,"2k5/8/4p3/4Pp2/3N1Pp1/N5P1/4B1K1/8 w KQkq - 0 1")
-    #print(board)
-    chess(board)
-
-    print(f"\n\nProgram ran for {round((time.time()-start),3)} seconds\n")
-
-if __name__ == "__main__":
-    main()
