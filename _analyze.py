@@ -1,7 +1,5 @@
-import time
-import heatmap
+import _heatmap
 import copy
-import numpy as np
 
 class chess():
     #remember:
@@ -400,12 +398,17 @@ class chess():
             #an homage to andrew
             tally = 0
 
+            #a second board with 
             for i in board:
                 board2.append(i[1:])
 
+            #if white's turn we look at white pieces
             if self.turn == "white":
                 piece = ["B","R","N","Q","P","K"]
 
+
+
+            #if black's turn we look at black pieces
             elif self.turn == "black":
                 piece = ["b","r","n","q","p","k"]
 
@@ -501,15 +504,15 @@ class chess():
                     if list(i.keys())[0][0]=="P" or list(i.keys())[0][0]=="p":
                         eheatmap = end(list(i.keys())[0],eheatmap)
                 
-                heatmap.map_points[5] = eheatmap
+                _heatmap.map_points[5] = eheatmap
             
             else:
-                heatmap.map_points[5] = heatmap.map_points[6]
+                _heatmap.map_points[5] = _heatmap.map_points[6]
 
             for i in moves:
                 
                 temp = list(i.keys())[0] 
-                heatm = heatmap.PieceMap(temp)
+                heatm = _heatmap.PieceMap(temp)
                 heat = heatm[0]
                 
 
@@ -585,10 +588,11 @@ class chess():
                     elif list(i.keys())[0][0] == "k":
                         king[1] = True
 
-
+                #if there is no black king
                 if king[1] == False:
                     return 10000
 
+                #if there is no white king
                 elif king[0] == False:
                     return -10000
                 
@@ -622,15 +626,20 @@ class chess():
         rid2 = []
         rid3 = []
 
-        #print(round((time.time()-start),3))
+        #finding every move in position
         for move in allmoves:
             moves = copy.copy(movecopy)
             moves = modify(moves,move)
 
             
             x = gameloop(moves)
+            
             if x == None:
                 depth1.append(depth(moves))
+
+            #if the king is capturable.
+            #(x is multiplied by 4 because it's the soonest checkmate
+            #the number we multiply by will decrease every move after so that we pick the fastest checkmate)
             else:
                 rid1.append([x*4, allmoves.index(move)])
 
@@ -643,26 +652,25 @@ class chess():
             self.turn = "white"
             switch = True
 
-        #print(round((time.time()-start),3))
+        #finding every move in position
         for d1moves in depth1:
             
             d1allmoves = removedupes(d1moves)
             d1movecopy = copy.copy(d1moves)
 
             for move in d1allmoves:
-
-                #print(allmoves[depth1.index(d1movecopy)],move)
-
                 d1moves = copy.copy(d1movecopy)
                 d1moves = modify(d1moves,move)
 
                 x = gameloop(d1moves)
                 if x == None:
                     depth2.append(depth(d1moves))
+
+                #if the king is capturable:
                 else:
-                    #print(allmoves[depth1.index(d1movecopy)],move)
                     rid2.append([x*3,depth1.index(d1movecopy)])
-            
+
+            #adding none as a seperator between moves so we know where every future move came from
             depth2.append(None)
 
         #switching colors
@@ -673,7 +681,7 @@ class chess():
             self.turn = "white"
             switch = True
 
-        #print(round((time.time()-start),3))
+        #finding every move in position
         for d2moves in depth2:
             if d2moves == None:
                 depth3.append(None)
@@ -683,14 +691,16 @@ class chess():
                 for move in d2allmoves:
                     d2moves = copy.copy(d2movecopy)
                     d2moves = modify(d2moves,move)
+
                     x = gameloop(d2moves)
                     if x == None:
                         depth3.append(depth(d2moves))
-                    else:
-                        #print(d1allmoves[depth2.index(d2movecopy)],move)
-                        rid3.append([x*2,depth2.index(d2movecopy)])
-                    #print(depth2.index(d2movecopy))
 
+                    #if the king is capturable:
+                    else:
+                        rid3.append([x*2,depth2.index(d2movecopy)])
+
+                #adding none as a seperator between moves so we know where every future move came from
                 depth3.append(None)
 
 
@@ -705,9 +715,7 @@ class chess():
 
         
         track = 0
-        #joe = [0,0]
-        #print(round((time.time()-start),3))
-        #print(len(depth3),movecount)
+
         for d3moves in depth3:
             if d3moves == None:
                 layer2.append(layer1)
@@ -729,24 +737,19 @@ class chess():
                 #if under 30 moves go to a depth of 3
                 else:
                     layer0.append(evaluate(d3moves))
-
-                        
+   
                 if self.turn == "white":
                     layer1.append(max(layer0))
                     
                 else:
                     layer1.append(min(layer0))
                 
-
-                #print(track)
                 for i in rid3:
                     if i[1] == track:
-                        #print(move,i[0])
                         layer1.append(i[0])
 
                 layer0 = []
 
-        #print(joe)
                 
 
 
@@ -783,7 +786,6 @@ class chess():
                         layer4[allmoves.index(i)-1] = rid1[0][0]
                         p = -1
             actual.append(layer4[allmoves.index(i)+p])
-            #print(i,layer4[allmoves.index(i)+p])
         layer4 = actual
 
 
@@ -812,18 +814,12 @@ class chess():
             board.append(list(moves[i].keys())[0])
 
 
-
         moves = findmoves(board)
         allmoves = removedupes(moves)
 
-
+        #this is so that we can use the values in the visual part:
         self.board = board
         self.move = move
         self.moves = moves
         self.allmoves = allmoves
         self.switch = switch
-
-
-
-
-

@@ -17,3 +17,6 @@
 1. d4 Nc6 2. Bf4 Nf6 3. Nc3 d5 4. Nb5 a6 5. Nxc7 Kd7 6. Nxa8 Qa5 7. c3 h5 8. Qb3 Nxd4 9. Qd1 Ne6 
 1. d4 Nc6 
 1. d4 Nc6 
+1. d4 Nc6 2. d5 Nb4 3. a3 Na6 4. e4 Nf6 5. e5 Ne4 6. f3 Nec5 7. b4 Na4 8. c4 Nb6 9. c5 Nxc5 10. bxc5 f5 11. cxb6 axb6 12. Qc2 g6 13. Kd1 Bg7 14. Bb2 c5 15. e6 Bxb2 16. Qxb2 Rf8 17. exd7 Bxd7 18. Bb5 Bxb5 19. Qxb5 Kf7 20. Qc4 Kg8 21. d6 Rf7 22. d7 Qxd7 23. Nd2 Ra4 24. Ne2 Rxc4 
+1. d4 Nc6 2. d5 Nb4 3. e4 Nf6 4. a3 Na6 5. e5 Ne4 6. f3 Nec5 7. b4 Na4 8. c4 Nb6 9. c5 Nxc5 10. bxc5 f5 11. cxb6 axb6 12. e6 dxe6 
+1. d4 Nc6 2. d5 Nb4 3. d6 cxd6 4. Qd4 Nxc2 5. Kd1 Nxd4 

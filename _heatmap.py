@@ -1,6 +1,7 @@
-import numpy as np
-
 map_points = [
+# a heatmap is just where we want our pieces to go
+# the higher the number the more desireable the square
+    
 # PAWN - INDEX - 0
 [
     [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
@@ -87,6 +88,8 @@ map_points = [
 
 def PieceMap(piece):
     piece_map = []
+
+    #The values of the pieces is represented by material
     if piece[0] == "p" or piece[0] == "P":
         piece_map = map_points[0]
         material = 1

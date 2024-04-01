@@ -1,5 +1,5 @@
 import pygame
-import backup
+import _analyze
 import copy 
 import playsound
 import time
@@ -14,13 +14,13 @@ turn = "white"
 switch = True
 compmove = None
 king = [True,True]
+
 #program needs to be given board and moves
 board = ['ra8', 'nb8', 'bc8', 'qd8', 'ke8', 'bf8', 'ng8', 'rh8', 'pa7', 'pb7', 'pc7', 'pd7', 'pe7', 'pf7', 'pg7', 'ph7', 'Pa2', 'Pb2', 'Pc2', 'Pd2', 'Pe2', 'Pf2', 'Pg2', 'Ph2', 'Ra1', 'Nb1', 'Bc1', 'Qd1', 'Ke1', 
 'Bf1', 'Ng1', 'Rh1']
 moves = [{'ra8': []}, {'nb8': []}, {'bc8': []}, {'qd8': []}, {'ke8': []}, {'bf8': []}, {'ng8': []}, {'rh8': []}, {'pa7': []}, {'pb7': []}, {'pc7': []}, {'pd7': []}, {'pe7': []}, {'pf7': []}, {'pg7': []}, {'ph7': 
 []}, {'Pa2': ['a3', 'a4']}, {'Pb2': ['b3', 'b4']}, {'Pc2': ['c3', 'c4']}, {'Pd2': ['d3', 'd4']}, {'Pe2': ['e3', 'e4']}, {'Pf2': ['f3', 'f4']}, {'Pg2': ['g3', 'g4']}, {'Ph2': ['h3', 'h4']}, {'Ra1': []}, {'Nb1': ['Na3', 'Nc3']}, {'Bc1': []}, {'Qd1': []}, {'Ke1': []}, {'Bf1': []}, {'Ng1': ['Nf3', 'Nh3']}, {'Rh1': []}]
-#board = ['kd7', 'pe6', 'Pe5', 'pf5', 'Nd4', 'Pf4', 'pg4', 'Na3', 'Pg3', 'Be2', 'Kf2']
-#moves = [{'kd7': []}, {'pe6': []}, {'Pe5': []}, {'pf5': []}, {'Nd4': ['Nb3', 'Ndb5', 'Ndc2', 'Nc6', 'Nf3', 'Nxe6', 'Nxf5']}, {'Pf4': []}, {'pg4': []}, {'Na3': ['Nb1', 'Nab5', 'Nac2', 'Nc4']}, {'Pg3': []}, {'Be2': ['Ba6', 'Bb5', 'Bc4', 'Bd1', 'Bd3', 'Bf1', 'Bf3', 'Bxg4']}, {'Kf2': ['Ke1', 'Ke3', 'Kf1', 'Kf3', 'Kg1', 'Kg2']}]
+
 allmoves = []
 
 for i in moves:
@@ -38,18 +38,8 @@ movepos = []
 things = []
 thing2 = []
 pgn = []
-poop = False
+movemade = False
 movecount = 0
-"""for piece in board:
-    pieces.append(pygame.image.load(f"{images[piece[0]]}.png"))
-    things.append(piece)
-    pos.append(pygame.Vector2(37.5+340+75*xaxis.index(piece[1]), 37.5+60+75*(8-int(piece[2]))))
-    ogpos.append([37.5+340+75*xaxis.index(piece[1]), 37.5+60+75*(8-int(piece[2])]))
-
-for move in allmoves:
-    movepos.append([37.5+340+75*xaxis.index(move[-2]), 37.5+60+75*(8-int(piece[2]))])
-    thing2.append(move)
-"""
 
 
 
@@ -163,16 +153,12 @@ def savegame(pgn):
         file.close()
 
 while running:
-    
     # poll for events
     # pygame.QUIT event means the user clicked X to close your window
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             savegame(pgn)
             running = False
-
-
-
 
 
         #if you are holding left click
@@ -189,8 +175,12 @@ while running:
                         if thing2[j] in list(moves[bonded].values())[0]:
                             #if you were clicking on a piece
                             if (pos[bonded].x > i[0]-50 and pos[bonded].x < i[0]+50) and (pos[bonded].y > i[1]-50 and pos[bonded].y <i[1]+50):
+
+                                #play moving sound
                                 if "x" not in thing2[j]:
                                     playsound.playsound("move.mp3",block=False)
+
+                                #play different sound for capture
                                 else:
                                     playsound.playsound("takes.mp3",block=False)
 
@@ -206,6 +196,9 @@ while running:
                                 board = modified[1]
                                 
                                 screen.fill("white")
+
+                                #drawing everything again so that the piece we just moved 
+                                #is centered on the square it moved to
 
                                 for j in range(0,8):
                                     for i in range(0,8):
@@ -253,21 +246,22 @@ while running:
                                     savegame(pgn)
                                     exit()
 
-                                poop = True
+                                movemade = True
                                 break
                     else:
                         continue
                     break
                 
-
-                if poop == False:
+                #if a move has not been made
+                if movemade == False:
                     pos[bonded].x = ogpos[bonded][0]
                     pos[bonded].y = ogpos[bonded][1]
 
+                #if a move has been made
                 else:
-                    poop = False
+                    movemade = False
                     movecount+=1
-                    analysis = backup.chess(board,movecount)
+                    analysis = _analyze.chess(board,movecount)
                     board = analysis.board
                     compmove = analysis.move
                     pgn.append(compmove)
@@ -288,7 +282,7 @@ while running:
                     
 
                     pieces = []
-                    for i in range(0,len(board)):
+                    for _ in range(0,len(board)):
                         pieces.append("0")
                     
                     pos = copy.copy(pieces)
@@ -318,8 +312,11 @@ while running:
                                     movepos.append([37.5+340+75*i, 37.5+60+75*j])
                                     thing2.append(move)
                     
+                    #play moving sound
                     if "x" not in compmove:
                         playsound.playsound("move.mp3",block=False)
+
+                    #play different sound for capture
                     else:
                         playsound.playsound("takes.mp3",block=False)
 
@@ -331,9 +328,6 @@ while running:
 
                         elif list(i.keys())[0][0] == "k":
                             king[1] = True
-
-
-
                                     
                 bonded = None
                 
@@ -341,6 +335,7 @@ while running:
     # fill the screen with a color to wipe away anything from last frame
     screen.fill("white")
     
+    #drawing the chess board
     for j in range(0,8):
         for i in range(0,8):
             
@@ -356,7 +351,7 @@ while running:
                 else:
                     color = "white"
             
-            #showing which piece moved where
+            #showing which piece moved where by making the square yellow
             if compmove !=None and original!= None:
                 if "=" in compmove:
                     if i == xaxis.index(compmove[-4]) and j==8-int(compmove[-3]):
@@ -402,7 +397,7 @@ while running:
             
 
 
-    #pieces
+    #drawing pieces
     for i in range(0,len(pieces)):
         pieces[i].convert()
         pieces1 = pieces[i].get_rect()
@@ -418,15 +413,15 @@ while running:
             for i in pos:
                 if board[pos.index(i)][0].isupper() == switch:
                     if mouse[0] > i.x-50 and mouse[0] < i.x+50:
-                        
                         if mouse[1] > i.y-50 and mouse[1] < i.y+50:
-                            #print(board[pos.index(i)])
+                            #determining which piece we are clicking on
                             i.x = mouse[0]
                             i.y = mouse[1]
                             bonded = pos.index(i)
                             break
 
         else:
+            #make the piece follow the cursor
             pos[bonded].x = mouse[0]
             pos[bonded].y = mouse[1]
 
@@ -447,11 +442,6 @@ while running:
 
 
     #pieces = Image.open("pieces.png").crop((0,0,30,30))
-            
-
-
-    # RENDER YOUR GAME HERE
-
     # flip() the display to put your work on screen
     pygame.display.flip()
 
