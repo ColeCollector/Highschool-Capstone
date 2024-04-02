@@ -1,5 +1,5 @@
 import time
-import heatmap
+import _heatmap
 import copy
 import numpy as np
 
@@ -511,15 +511,15 @@ class chess():
                     eheatmap = end(list(i.keys())[0],eheatmap)
             
             if endgame<=4:
-                heatmap.map_points[5] = eheatmap
+                _heatmap.map_points[5] = eheatmap
             
             else:
-                heatmap.map_points[5] = heatmap.map_points[6]
+                _heatmap.map_points[5] = _heatmap.map_points[6]
 
             for i in moves:
                 
                 temp = list(i.keys())[0] 
-                heatm = heatmap.PieceMap(temp)
+                heatm = _heatmap.PieceMap(temp)
                 heat = heatm[0]
                 
 
@@ -530,7 +530,7 @@ class chess():
                 else:
                     evaluation -= heatm[1]*10
 
-                    if heatmap.map_points[5] == eheatmap:
+                    if _heatmap.map_points[5] == eheatmap:
                         evaluation -= heat[8-int(temp[-1])][int(self.xaxis.index(temp[-2]))]
                     else:
                         evaluation -= heat[int(temp[-1])-1][7-int(self.xaxis.index(temp[-2]))]  

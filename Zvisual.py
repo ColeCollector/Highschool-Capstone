@@ -1,5 +1,5 @@
 import pygame
-import analyze
+import _analyze
 import copy 
 
 pygame.init()
@@ -132,7 +132,7 @@ while running:
             
         #If you click middle mouse button
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 2:
-            analysis = analyze.chess(board)
+            analysis = _analyze.chess(board)
             print(board)
             board = analysis.board
             print(board)

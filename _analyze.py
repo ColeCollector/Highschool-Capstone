@@ -468,6 +468,9 @@ class chess():
             return allmoves
 
         def end(square,eheatmap):
+            #this is a heatmap for the endgame when there are less pieces on the board
+            #we need a different heatmap because instead of hiding in the corner we want our king
+            #to venture into the center
             x = int(self.xaxis.index(square[-2]))
             y = 8 - int(square[-1])
 
@@ -488,6 +491,8 @@ class chess():
         
         def evaluate(moves):
             evaluation = 0
+
+            #if there is less than 4 pieces on the board:
             if self.endgame<=4:
                 print("Endgame\n\n")
                 eheatmap = [
