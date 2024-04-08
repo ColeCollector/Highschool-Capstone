@@ -441,7 +441,8 @@ class chess():
             return moves
 
         def removedupes(moves):
-
+            #this function is used to get rid of duplicate moves for example 
+            #if two different knights can move to the same square
             allmoves = []
             dupes = []
 
@@ -494,7 +495,9 @@ class chess():
 
             #if there is less than 4 pieces on the board:
             if self.endgame<=4:
-                print("Endgame\n\n")
+                #this is generating a new heatmap for the king so that 
+                #the bot doesnt just move its king back and forth in the corner
+                
                 eheatmap = [
                 [0,0,0,0,0,0,0,0],
                 [0,0,0,0,0,0,0,0],
@@ -504,6 +507,10 @@ class chess():
                 [0,0,0,0,0,0,0,0],
                 [0,0,0,0,0,0,0,0],
                 [0,0,0,0,0,0,0,0]]
+
+                #the new heatmap is based on how close a square is to all other 
+                #pawns on the board so that the king guards its pawns and goes 
+                #after the oponents pawns
 
                 for i in moves:
                     if list(i.keys())[0][0]=="P" or list(i.keys())[0][0]=="p":
@@ -618,15 +625,21 @@ class chess():
             if list(i.keys())[0][0]!="P" and list(i.keys())[0][0]!="p":
                 self.endgame+=1
 
+        #the layers are used to give moves values
         layer0 = []
         layer1 = []
         layer2 = []
         layer3 = []
         layer4 = []
+
+        #positions that are one move ahead
         depth1 = []
+        #positions that are two moves ahead
         depth2 = []
+        #positions that are three moves ahead
         depth3 = []
 
+        #the rid lists are used to add a value to positions where the king is taken
         rid1 = []
         rid2 = []
         rid3 = []
@@ -636,7 +649,6 @@ class chess():
             moves = copy.copy(movecopy)
             moves = modify(moves,move)
 
-            
             x = gameloop(moves)
             
             if x == None:
@@ -645,6 +657,7 @@ class chess():
             #if the king is capturable.
             #(x is multiplied by 4 because it's the soonest checkmate
             #the number we multiply by will decrease every move after so that we pick the fastest checkmate)
+            
             else:
                 rid1.append([x*4, allmoves.index(move)])
 
@@ -755,9 +768,6 @@ class chess():
 
                 layer0 = []
 
-                
-
-
         track = 0
         for i in layer2:
             if i!= []:
@@ -776,7 +786,6 @@ class chess():
                     layer4.append(min(layer3))
                 layer3 = []
                 track+=1
-
 
         #inserting the checkmate evaluation between the other moves
         p = 0
@@ -804,15 +813,10 @@ class chess():
             switch = True
             move = allmoves[layer4.index(max(layer4))]
 
-
-
         moves = copy.copy(movecopy)
         moves = modify(moves,move)
 
 
-
-
-        
         #updating board for next game
         board = []
         for i in range(len(moves)):

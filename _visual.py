@@ -302,6 +302,7 @@ while running:
                                     pos[board.index(piece)] = pygame.Vector2(37.5+340+75*i, 37.5+60+75*j)
                                     ogpos[board.index(piece)] = [37.5+340+75*i, 37.5+60+75*j]
 
+                            #if pawn promotion
                             for move in allmoves:
                                 if "=" in move:
                                     if xaxis.index(move[-4]) == i and 8-int(move[-3]) == j:
