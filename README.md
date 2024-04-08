@@ -1,6 +1,9 @@
 **Somethings to know:**
+
+You can play the bot by launching the _visual.py file
+
 -The files with a "_" at the start are the important ones 
--The files with a "Z" at the start are the unimportant old files
+-The files with a "Z" at the start are the unimportant old files that you can ignore
 
 -A chess move will contain a piece that was moved represented by one letter at the start and the square it moved to (a letter and number)
 -An uppercase letter in a chess move represents a white piece and a lowercase letter represents a black piece
