@@ -17,7 +17,7 @@ compmove = None
 hint = None
 hint_end = None
 original = None
-eval_toggle = True
+eval_toggle = False
 switch = True
 
 eval = 0
@@ -30,7 +30,7 @@ sounds[2].set_volume(0.05)
 
 # Initialize chess board
 board = chess.Board()
-board.set_fen('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1')
+board.set_fen('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1')   
 
 # Define the path to the Stockfish executable
 stockfish_path = "stockfish.exe"
@@ -38,8 +38,8 @@ engine = chess.engine.SimpleEngine.popen_uci(stockfish_path)
 
 # Define square coordinates and image mappings
 xaxis = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
-images = {"K": "Wking", "Q": "Wqueen", "R": "Wrook", "B": "Wbishop", "N": "Wknight", "P": "Wpawn",
-          "k": "Bking", "q": "Bqueen", "r": "Brook", "b": "Bbishop", "n": "Bknight", "p": "Bpawn"}
+images = {"K": "white/King", "Q": "white/Queen", "R": "white/Rook", "B": "white/Bishop", "N": "white/Knight", "P": "white/Pawn",
+          "k": "black/King", "q": "black/Queen", "r": "black/Rook", "b": "black/Bishop", "n": "black/Knight", "p": "black/Pawn"}
 
 # Display text on the screen
 def show_text(text, size, location, color):
@@ -66,7 +66,7 @@ def savegame(pgn):
         
         file.close()
 
-def check_condition(switch, piece, i, j):
+def check_condition(switch, piece, i, j, opponent):
     if piece == None:
         return False
     
@@ -75,10 +75,16 @@ def check_condition(switch, piece, i, j):
             return xaxis.index(piece[-4]) == i and 8 - int(piece[-3]) == j
         
         elif 'O-O' == piece:
-            return 6 == i and 7 == j
+            if opponent == True:
+                return 6 == i and 0 == j
+            else:
+                return 6 == i and 7 == j
 
         elif 'O-O-O' == piece:
-            return 2 == i and 7 == j
+            if opponent == True:
+                return 2 == i and 0 == j
+            else:
+                return 2 == i and 7 == j
         
         else:
             return xaxis.index(piece[-2]) == i and 8 - int(piece[-1]) == j
@@ -87,10 +93,16 @@ def check_condition(switch, piece, i, j):
             return 7 - xaxis.index(piece[-4]) == i and int(piece[-3]) - 1 == j
         
         elif 'O-O' == piece:
-            return 1 == i and 7 == j
+            if opponent == True:
+                return 1 == i and 0 == j
+            else:
+                return 1 == i and 7 == j
 
         elif 'O-O-O' == piece:
-            return 5 == i and 7 == j
+            if opponent == True:
+                return 5 == i and 0 == j
+            else:
+                return 5 == i and 7 == j
         
         else:
             return 7 - xaxis.index(piece[-2]) == i and int(piece[-1]) - 1 == j
@@ -132,14 +144,14 @@ def board_reset():
     for j in range(8):
         for i in range(8):
             for piece in board_pieces:
-                if check_condition(switch, piece, i, j):
+                if check_condition(switch, piece, i, j, None):
                     piece_images.append(pygame.image.load(f"images/{images[piece[0]]}.png"))
                     sorted_pieces.append(piece)
                     pos.append(pygame.Vector2(340 + 75 * i + 37.5, 60 + 75 * j + 37.5))
                     og_pos.append([340 + 75 * i + 37.5, 60 + 75 * j + 37.5])
 
             for move in circle_squares:
-                if check_condition(switch, move, i, j):
+                if check_condition(switch, move, i, j, None):
                     movepos.append([340 + 75 * i + 37.5, 60 + 75 * j + 37.5])
                     sorted_moves.append(move)
 
@@ -156,11 +168,13 @@ while running:
 
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             holding = True
+
+            # Buttons
             for j in range(4):
                 if pygame.Rect(1000,265+50*j,150,40).collidepoint(mouse):
                     if button_text[j] == "Resign":
                         if original != None:
-                            #savegame(pgn)
+                            savegame(pgn)
                             pgn = []
                             original = None
                             compmove = None
@@ -186,6 +200,7 @@ while running:
                         # Get the best move from Stockfish
                         result = engine.play(board, chess.engine.Limit(time=1))
                         original = f"{board.piece_at(result.move.from_square)}{chess.square_name(result.move.from_square)}"
+
                         compmove = board.san(result.move).replace('+','').replace('#', '')
                         pgn.append(compmove)
                         board.push(result.move)
@@ -218,7 +233,13 @@ while running:
             for i in og_pos:
                 if sorted_pieces[og_pos.index(i)][0].isupper() == switch:
                     if (mouse[0] > i[0] - 50 and mouse[0] < i[0] + 50) and (mouse[1] > i[1] - 50 and mouse[1] < i[1] + 50):
+                        
+                        # To fix a bug/visual thing
+                        if bonded != og_pos.index(i):
+                            drop_counter = 0
+
                         bonded = og_pos.index(i)
+                        
 
         if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
             if bonded is not None:
@@ -261,7 +282,6 @@ while running:
 
                                 pygame.display.flip()
 
-
                                 treemove = _openingtree.based_move(pgn)
 
                                 if treemove != None: 
@@ -280,11 +300,11 @@ while running:
                                     pgn.append(compmove)
                                     board.push(result.move)
                                     '''
+                                    # Gets the top 7 best moves from stockfish and grabs a random one based on its score
+                                    info = engine.analyse(board, chess.engine.Limit(time=2.0), multipv=10)
 
-                                    info = engine.analyse(board, chess.engine.Limit(time=2.0), multipv=7)
-
-                                    top7 = []
-                                    top7_weights = []
+                                    top10 = []
+                                    top10_weights = []
 
                                     for move_info in info:
                                         move = move_info["pv"][0]
@@ -292,24 +312,20 @@ while running:
                                         score = move_info["score"].relative.score()
                                         original = f"{board.piece_at(move.from_square)}{chess.square_name(move.from_square)}"
 
-                                        top7.append([san_move,original,move])
-                                        top7_weights.append(score)
+                                        top10.append([san_move,original,move])
+                                        top10_weights.append(score)
 
                                         if score < info[0]["score"].relative.score()-100:
                                             break
 
-                                    if min(top7_weights) <= 0:
-                                        top7_weights = [1 + top+min(top7_weights)*-1 for top in top7_weights]
+                                    if min(top10_weights) <= 0:
+                                        top10_weights = [10 + top+min(top10_weights)*-1 for top in top10_weights]
 
-                                    random_move = random.choices(top7,top7_weights)[0]
+                                    random_move = random.choices(top10,top10_weights)[0]
                                     original = random_move[1]
                                     compmove = random_move[0].replace('+','').replace('#', '')
                                     pgn.append(compmove)
                                     board.push(random_move[2])
-
-
-
-
 
                                 info = engine.analyse(board, chess.engine.Limit(time=2))
                                 eval = info["score"]
@@ -371,23 +387,23 @@ while running:
         for i in range(8):
             color = "white" if (i + j) % 2 == 0 else "#D684FF"
 
-            if check_condition(switch, compmove, i, j):
+            if check_condition(switch, compmove, i, j, True):
                 color = "#FFFFC6" if (i + j) % 2 == 0 else "#FFE884"
     
-            if check_condition(switch, original, i, j):
+            if check_condition(switch, original, i, j, None):
                 color = "#FFFFC6" if (i + j) % 2 == 0 else "#FFE884"
 
-            if check_condition(switch, hint_end, i, j):
+            if check_condition(switch, hint_end, i, j, None):
                 color = "#C9E5C0" if (i + j) % 2 == 0 else "#ACE89B"
 
-            if check_condition(switch, hint, i, j):
+            if check_condition(switch, hint, i, j, None):
                 color = "#C9E5C0" if (i + j) % 2 == 0 else "#ACE89B"
 
             pygame.draw.rect(screen, color, pygame.Rect(340 + 75 * i, 60 + 75 * j, 75, 75))
 
             if bonded is not None and sorted_pieces[bonded] in moves:
                 for move in moves[sorted_pieces[bonded]]:
-                    if check_condition(switch, move, i, j):
+                    if check_condition(switch, move, i, j, None):
                         color = "#EBCCFF" if (i + j) % 2 == 0 else "#945CB2"
                         pygame.draw.circle(screen, color, [377.5 + 75 * i, 97.5 + 75 * j], 15)
 
@@ -398,13 +414,7 @@ while running:
         screen.blit(piece_images[i], rect)
 
     if holding:
-        if bonded is None:
-            for i in range(len(pos)):
-                if sorted_pieces[i][0].isupper() == switch:
-                    if (pos[i].x - 50 < mouse[0] < pos[i].x + 50) and (pos[i].y - 50 < mouse[1] < pos[i].y + 50):
-                        bonded = i
-                        break
-        else:
+        if bonded != None:
             pos[bonded] = pygame.Vector2(mouse[0], mouse[1])
 
     if eval_toggle:

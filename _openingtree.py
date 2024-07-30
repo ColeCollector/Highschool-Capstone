@@ -1,13 +1,23 @@
 import math
 
-file = open("ColeCollector-white.pgn","r")
-info = file.read().split("\n\n")
+white_file = open("ColeCollector-white.pgn","r")
+white_info = white_file.read().split("\n\n")
+
+black_file =  open("ColeCollector-black.pgn","r")
+black_info = black_file.read().split("\n\n")
+
 
 alpha = ['a','b','c','d','e','f','g','h','-']
 
 def based_move(played_moves):
     next_move = {}  
     total_moves_played = 0
+
+    if len(played_moves) % 2 == 0:
+        info = black_info
+
+    else:
+        info = white_info
 
     for i in range(len(info)-1):
         mylist = info[i].split('\n')[-1].split(" ")
