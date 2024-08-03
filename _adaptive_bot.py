@@ -3,6 +3,7 @@ import chess
 import chess.engine
 import _openingtree
 import random
+import time
 
 pygame.init()
 screen = pygame.display.set_mode((1280, 720))
@@ -19,7 +20,8 @@ hint_end = None
 original = None
 eval_toggle = False
 switch = True
-
+resign = False
+treemove = 0
 eval = 0
 drop_counter = 0
 
@@ -160,6 +162,13 @@ board_reset()
 transparent_surface = pygame.Surface((1280, 200), pygame.SRCALPHA)
 transparent_surface.fill((0, 0, 0, 128))  # Fill with semi-transparent red (RGBA)
 
+# Create a surface for the circle
+circle_surface = pygame.Surface((1280, 200), pygame.SRCALPHA)
+circle_surface.set_alpha(64)
+
+# Draw a circle on the surface
+pygame.draw.circle(circle_surface, (64,20,86), (30, 30), 15)
+
 while running:
     mouse = pygame.mouse.get_pos()
     for event in pygame.event.get():
@@ -173,17 +182,10 @@ while running:
             for j in range(4):
                 if pygame.Rect(1000,265+50*j,150,40).collidepoint(mouse):
                     if button_text[j] == "Resign":
-                        if original != None:
-                            savegame(pgn)
-                            pgn = []
-                            original = None
-                            compmove = None
-                            eval = 0
-                            board.set_fen('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1')       
-                            board_reset()
+                        resign = True
 
                     elif button_text[j] == "Hint":
-                        result = engine.play(board, chess.engine.Limit(time=1))
+                        result = engine.play(board, chess.engine.Limit(time=0.5))
                         hint = f"{board.piece_at(result.move.from_square)}{chess.square_name(result.move.from_square)}"
                         hint_end = board.san(result.move).replace('+','').replace('#', '')
 
@@ -196,6 +198,10 @@ while running:
                     elif button_text[j] == "Flip":
                         if switch == True: switch = False
                         else: switch = True
+
+                        # Don't print an old hint
+                        hint = None
+                        hint_end = None
 
                         # Get the best move from Stockfish
                         result = engine.play(board, chess.engine.Limit(time=1))
@@ -219,11 +225,15 @@ while running:
                             rect = piece_images[i].get_rect(center=(pos[i].x, pos[i].y))
                             screen.blit(piece_images[i], rect)
 
-                        #play moving sound
-                        if "x" not in compmove:
+                        # Mate sound
+                        if len(moves) == 0:
+                            sounds[0].play()
+
+                        # Moving sound
+                        elif "x" not in compmove:
                             sounds[1].play()
 
-                        #play different sound for capture
+                        # Play different sound for capture
                         else:
                             sounds[3].play()
 
@@ -280,7 +290,7 @@ while running:
                                     screen.blit(piece_images[i], rect)
 
                                 pygame.display.flip()
-
+                                
                                 treemove = _openingtree.based_move(pgn)
 
                                 if treemove != None: 
@@ -299,32 +309,40 @@ while running:
                                     pgn.append(compmove)
                                     board.push(result.move)
                                     '''
-                                    # Gets the top 7 best moves from stockfish and grabs a random one based on its score
-                                    info = engine.analyse(board, chess.engine.Limit(time=1.0), multipv=10)
+                                    # If the bot isn't mated
+                                    if not board.is_checkmate():
+                    
+                                        # Gets the top 10 best moves from stockfish and grabs a random one based on its score
 
-                                    top10 = []
-                                    top10_weights = []
+                                        info = engine.analyse(board, chess.engine.Limit(time=1.0), multipv=10)
 
-                                    for move_info in info:
-                                        move = move_info["pv"][0]
-                                        san_move = board.san(move)
-                                        score = move_info["score"].relative.score()
-                                        original = f"{board.piece_at(move.from_square)}{chess.square_name(move.from_square)}"
+                                        top10 = []
+                                        top10_weights = []
 
-                                        top10.append([san_move,original,move])
-                                        top10_weights.append(score)
+                                        for move_info in info:
+                                            move = move_info["pv"][0]
+                                            san_move = board.san(move)
+                                            score = move_info["score"].relative.score()
+                                            original = f"{board.piece_at(move.from_square)}{chess.square_name(move.from_square)}"
+                                            
+                                            top10.append([san_move,original,move])
+                                            if score == None: score = -1000
+                                            top10_weights.append(score)
 
-                                        if score < info[0]["score"].relative.score()-100:
-                                            break
+                                            if score < info[0]["score"].relative.score()-100:
+                                                break
 
-                                    if min(top10_weights) <= 0:
-                                        top10_weights = [10 + top+min(top10_weights)*-1 for top in top10_weights]
+                                        if min(top10_weights) <= 0:
+                                            top10_weights = [top+min(top10_weights)*-1 for top in top10_weights]
+                                        try:
+                                            random_move = random.choices(top10,top10_weights)[0]
+                                        except:
+                                            random_move = random.choice(top10)
 
-                                    random_move = random.choices(top10,top10_weights)[0]
-                                    original = random_move[1]
-                                    compmove = random_move[0].replace('+','').replace('#', '')
-                                    pgn.append(compmove)
-                                    board.push(random_move[2])
+                                        original = random_move[1]
+                                        compmove = random_move[0].replace('+','').replace('#', '')
+                                        pgn.append(compmove)
+                                        board.push(random_move[2])
 
                                 if eval_toggle:
                                     info = engine.analyse(board, chess.engine.Limit(time=2))
@@ -335,7 +353,7 @@ while running:
                                 # Opening Tree Sound effect
                                 if treemove != None: 
                                     sounds[2].play()
-
+                                
                                 # Mate sound
                                 if len(moves) == 0:
                                     sounds[0].play()
@@ -375,7 +393,7 @@ while running:
 
     for j in range(4):
         if pygame.Rect(1000,265+50*j,150,40).collidepoint(mouse):
-            pygame.draw.rect(screen, '#E9BFFF', (1000,265+50*j,150,40))
+            pygame.draw.rect(screen, '#D684FF', (1000,265+50*j,150,40))
             show_text(button_text[j],40,(1075,285+50*j),'white')
 
         else:
@@ -404,8 +422,8 @@ while running:
             if bonded is not None and sorted_pieces[bonded] in moves:
                 for move in moves[sorted_pieces[bonded]]:
                     if check_condition(switch, move, i, j, None):
-                        color = "#EBCCFF" if (i + j) % 2 == 0 else "#945CB2"
-                        pygame.draw.circle(screen, color, [377.5 + 75 * i, 97.5 + 75 * j], 15)
+                        screen.blit(circle_surface, [377.5 - 30 + 75 * i, 97.5 - 30 + 75 * j])
+
 
     # Drawing piece_images
     for i in range(len(piece_images)):
@@ -423,14 +441,32 @@ while running:
             pygame.draw.rect(screen,'white',(252,62,16,298+eval/3))
             show_text(str(round(eval/60,2)),40,(200,720/2),'#AE4ADB')
 
-    if len(moves) == 0:
+    if len(moves) == 0 or resign == True:
         font = pygame.font.Font('freesansbold.ttf', 50)
-        text = font.render("You Lost", True, 'red')
+
+        if (len(pgn) % 2 == 1 and switch == True) or (len(pgn) % 2 == 0 and switch == False):
+            text = font.render("You Won", True, 'green')
+            
+        else:
+            text = font.render("You Lost", True, 'red')
+
         textRect = text.get_rect()
         textRect.center = (1280 // 2, 720 // 2)
-
+        
         screen.blit(transparent_surface, (0,720/2-100,600,100))
         screen.blit(text, textRect)
+        pygame.display.flip()
+        time.sleep(3)
+                                                
+        savegame(pgn)
+        pgn = []
+        resign = False
+        original = None
+        compmove = None
+        eval = 0
+                                          
+        board.set_fen('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1') 
+        board_reset()
 
     pygame.display.flip()
     clock.tick(60)
