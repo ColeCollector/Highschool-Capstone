@@ -559,7 +559,6 @@ class chess():
                         
                         self.original = i
                 
-
                 if list(i.keys())[0][1:] == move[-2]+move[-1]:
                     moves.remove(i)
 

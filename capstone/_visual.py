@@ -1,5 +1,5 @@
 import pygame
-import _analyze
+import capstone._analyze as _analyze
 import copy 
 import playsound
 import time

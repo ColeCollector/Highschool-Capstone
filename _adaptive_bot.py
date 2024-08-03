@@ -240,7 +240,6 @@ while running:
 
                         bonded = og_pos.index(i)
                         
-
         if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
             if bonded is not None:
                 if sorted_pieces[bonded] in moves:
@@ -301,7 +300,7 @@ while running:
                                     board.push(result.move)
                                     '''
                                     # Gets the top 7 best moves from stockfish and grabs a random one based on its score
-                                    info = engine.analyse(board, chess.engine.Limit(time=2.0), multipv=10)
+                                    info = engine.analyse(board, chess.engine.Limit(time=1.0), multipv=10)
 
                                     top10 = []
                                     top10_weights = []
@@ -327,9 +326,10 @@ while running:
                                     pgn.append(compmove)
                                     board.push(random_move[2])
 
-                                info = engine.analyse(board, chess.engine.Limit(time=2))
-                                eval = info["score"]
-                                eval = eval.pov(chess.WHITE).score()
+                                if eval_toggle:
+                                    info = engine.analyse(board, chess.engine.Limit(time=2))
+                                    eval = info["score"]
+                                    eval = eval.pov(chess.WHITE).score()
 
 
                                 # Opening Tree Sound effect
