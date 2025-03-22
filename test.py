@@ -30,7 +30,7 @@ while running:
     screen.fill((0, 0, 0))
 
     # Blit the circle surface onto the main screen
-    screen.blit(circle_surface, (200, 200))
+    screen.blit(circle_surface, (100, 100))
 
     # Update the display
     pygame.display.flip()

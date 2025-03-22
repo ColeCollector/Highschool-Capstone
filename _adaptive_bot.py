@@ -160,7 +160,7 @@ def board_reset():
 board_reset()
 
 transparent_surface = pygame.Surface((1280, 200), pygame.SRCALPHA)
-transparent_surface.fill((0, 0, 0, 128))  # Fill with semi-transparent red (RGBA)
+transparent_surface.fill((0, 0, 0, 128))
 
 # Create a surface for the circle
 circle_surface = pygame.Surface((1280, 200), pygame.SRCALPHA)
@@ -226,7 +226,7 @@ while running:
                             screen.blit(piece_images[i], rect)
 
                         # Mate sound
-                        if len(moves) == 0:
+                        if "#" in compmove:
                             sounds[0].play()
 
                         # Moving sound
@@ -314,22 +314,28 @@ while running:
                     
                                         # Gets the top 10 best moves from stockfish and grabs a random one based on its score
 
-                                        info = engine.analyse(board, chess.engine.Limit(time=1.0), multipv=10)
+                                        info = engine.analyse(board, chess.engine.Limit(time=1.0), multipv=5)
 
                                         top10 = []
                                         top10_weights = []
-
+                                        print("")
                                         for move_info in info:
                                             move = move_info["pv"][0]
                                             san_move = board.san(move)
                                             score = move_info["score"].relative.score()
                                             original = f"{board.piece_at(move.from_square)}{chess.square_name(move.from_square)}"
-                                            
                                             top10.append([san_move,original,move])
-                                            if score == None: score = -1000
+
+                                            print(san_move,score)
+
+                                            if score == None and info.index(move_info) == 0: 
+                                                score = 1000
+                                            else:
+                                                score = -1000
+
                                             top10_weights.append(score)
 
-                                            if score < info[0]["score"].relative.score()-100:
+                                            if score < top10_weights[0]-100:
                                                 break
 
                                         if min(top10_weights) <= 0:
@@ -337,7 +343,7 @@ while running:
                                         try:
                                             random_move = random.choices(top10,top10_weights)[0]
                                         except:
-                                            random_move = random.choice(top10)
+                                            random_move = top10[0]
 
                                         original = random_move[1]
                                         compmove = random_move[0].replace('+','').replace('#', '')
@@ -355,7 +361,7 @@ while running:
                                     sounds[2].play()
                                 
                                 # Mate sound
-                                if len(moves) == 0:
+                                if "#" in compmove:
                                     sounds[0].play()
 
                                 # Moving sound
